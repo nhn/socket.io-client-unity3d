@@ -16,7 +16,7 @@ Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later
 
 ## Installation
 
-Download Socket.IO.unitypackage from [https://github.nhnent.com/rtcs/socket.io-client-unity3d/releases](https://github.nhnent.com/rtcs/socket.io-client-unity3d/releases)
+Download Socket.IO.unitypackage from [https://github.com/nhnent/socket.io-client-unity3d/releases/download/v1.0.0/Socket.IO-Client.unitypackage](https://github.com/nhnent/socket.io-client-unity3d/releases/download/v1.0.0/Socket.IO-Client.unitypackage)
 
 ## Samples
 
