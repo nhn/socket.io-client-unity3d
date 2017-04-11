@@ -8,6 +8,9 @@ using System.Collections.Generic;
 
 namespace socket.io {
 
+    /// <summary>
+    /// SocketManager manages Socket and WebSocketTrigger instances
+    /// </summary>
     public class SocketManager : MonoSingleton<SocketManager> {
 
         public Socket Connect(string url) {

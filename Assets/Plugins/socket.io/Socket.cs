@@ -8,7 +8,7 @@ namespace socket.io {
     public class Socket : MonoBehaviour {
 
         /// <summary>
-        /// 네임스페이스 ("/"은 기본값으로 글로벌 네임스페이스임)
+        /// Namespace ("/" is the default namespace which means global namespace.)
         /// </summary>
         public string nsp = "/";
 
@@ -89,7 +89,7 @@ namespace socket.io {
         readonly Dictionary<int, Action<string>> _acks = new Dictionary<int, Action<string>>();
 
         /// <summary>
-        /// Acks를 받기 위한 패킷 아이디 할당용 카운팅 필드
+        /// The unique value generator for acks message id.
         /// </summary>
         int _idGenerator = -1;
 
@@ -123,7 +123,7 @@ namespace socket.io {
             Emit(evtName, string.Empty, null);
         }
 
-        #region 시스템 이벤트 핸들러
+        #region System-Event handlers
         public Action onConnect;
         public Action onConnectTimeOut;
         public Action onReconnectAttempt;

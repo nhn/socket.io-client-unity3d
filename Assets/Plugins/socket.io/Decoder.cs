@@ -30,6 +30,7 @@ namespace socket.io {
 
                 if (data[readPos] == '/')
                     pkt.nsp = ReadChunk(ref data, ref readPos);
+
                 if (readPos == data.Length)
                     return pkt;
 
@@ -38,6 +39,7 @@ namespace socket.io {
 
                 if (data[readPos] != '[')
                     int.TryParse(ReadChunk(ref data, ref readPos), out pkt.id);
+
                 if (readPos == data.Length)
                     return pkt;
 

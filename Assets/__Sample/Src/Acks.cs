@@ -2,13 +2,15 @@
 using socket.io;
 
 namespace Sample {
-
+    
     /// <summary>
-    /// http://socket.io/docs/#sending-and-getting-data-(acknowledgements) 샘플
+    /// The sample show how to acks the message you sent.
     /// </summary>
     public class Acks : MonoBehaviour {
 
         void Start() {
+            Config.serverUrl = "http://localhost:80";
+
             var socket = Socket.Connect(Config.serverUrl);
             socket.On("connect", () => {
                 socket.Emit("ferret", "\"toby\"", (string r) => {

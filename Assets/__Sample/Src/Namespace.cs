@@ -4,9 +4,14 @@ using socket.io;
 
 namespace Sample {
 
+    /// <summary>
+    /// The sample show how to restrict yourself a namespace
+    /// </summary>
     public class Namespace : MonoBehaviour {
 
         void Start() {
+            Config.serverUrl = "http://localhost:80";
+
             var chat = Socket.Connect(Config.serverUrl + "/chat");
             var news = Socket.Connect(Config.serverUrl + "/news");
 

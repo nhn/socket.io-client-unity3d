@@ -12,7 +12,9 @@ using System.Collections.Generic;
 namespace Sample {
 
     /// <summary>
-    /// https://github.com/socketio/socket.io/tree/master/examples/chat - Unity3D client code
+    /// The deco code which implements the client-side of Chat service.
+    /// You can download Chat service server-side code from URL below
+    /// (https://github.com/socketio/socket.io/tree/master/examples/chat)
     /// </summary>
     public class Chat : MonoBehaviour {
 
@@ -27,9 +29,6 @@ namespace Sample {
         GameObject _chat;
 
         void Awake() {
-            // Set the server address here~
-            Config.serverUrl = "http://10.77.38.110:3000";
-
             _login = gameObject.Descendants().First(d => d.name == "Login Panel");
             _login.SetActive(false);
 
@@ -46,7 +45,7 @@ namespace Sample {
             public string username;
             public string message;
 
-            #region 컬러 테이블
+            #region User name color table
             /// <summary>
             /// User's name color table
             /// </summary>
@@ -116,7 +115,7 @@ namespace Sample {
         string _userName;
 
         IEnumerator Start() {
-            yield return null;
+            Config.serverUrl = "http://localhost:3000";
 
             var socket = Socket.Connect(Config.serverUrl);
             yield return new WaitUntil(() => socket.IsConnected);
