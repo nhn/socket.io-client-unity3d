@@ -2,13 +2,15 @@
 using socket.io;
 
 namespace Sample {
-
+    
     /// <summary>
-    /// http://socket.io/docs/#using-with-node-http-server 샘플
+    /// The basic sample to show how to send and receive messages.
     /// </summary>
     public class Events : MonoBehaviour {
 
         void Start() {
+            Config.serverUrl = "http://localhost:80";
+
             var socket = Socket.Connect(Config.serverUrl);
             socket.On("news", (string r) => {
                 Debug.Log(r);
