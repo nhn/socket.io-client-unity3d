@@ -9,6 +9,7 @@ Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later
 ## Platforms
 
 * Windows
+* Linux
 * OSX
 * iOS
 * Android
