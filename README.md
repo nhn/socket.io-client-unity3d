@@ -82,7 +82,7 @@ io.on('connection', function (socket) {
 });
 ```
 
-#### Client
+#### Unity3D Client
 ``` csharp
 using UnityEngine;
 using socket.io;
@@ -125,7 +125,7 @@ var news = io
   });
 ```
 
-#### Client
+#### Unity3D Client
 ``` csharp
 using UnityEngine;
 using socket.io;
@@ -160,7 +160,7 @@ public class Namespace : MonoBehaviour {
 
 ## Versioning
 
-* The version of TOAST Haste follows Semantic Versioning 2.0.
+* The version of Socket.IO-Client-Unity3D follows Semantic Versioning 2.0.
 
 * Given a version number MAJOR.MINOR.PATCH, increment the:
     i. MAJOR version when you make incompatible API changes,
