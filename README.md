@@ -216,9 +216,9 @@ dl_rtcs@nhnent.com
 
 ## Contributor
 
-Junhwan, Oh
-Doyoung, An
-Chanyoung, Park
+* Junhwan, Oh
+* Doyoung, An
+* Chanyoung, Park
 
 ## License
 
