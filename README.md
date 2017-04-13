@@ -30,6 +30,11 @@ Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later
 Improve performance and convenience, and documentation.
 Consider the performance test.
 
+## Contributing
+
+* Source Code Contributions:
+    * Please follow the [Contribution Guidelines for Socket.IO-Client for Unity3D](https://github.com/nhnent/socket.io-client-unity3d/blob/master/CONTRIBUTING.md).
+
 ## Bug Reporting
 
 If you find a bug, it is very important to report it. We would like to help you and smash the bug away. If you can fix a bug, you can send pull request (Should register a issue before sending PR)
