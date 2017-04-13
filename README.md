@@ -223,7 +223,7 @@ dl_rtcs@nhnent.com
 
 ## License
 
-Socket.IO-Client-Unity3D is licensed under the Apache 2.0 license, see LICENSE for details.
+Socket.IO-Client-Unity3D is licensed under the MIT license, see LICENSE for details.
 
 ```
 The MIT License (MIT)
