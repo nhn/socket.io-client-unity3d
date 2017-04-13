@@ -8,7 +8,7 @@ Submit only relevant commits. We don't mind many commits in a pull request, but 
 
 - __Use a feature branch__ The pull request should be created from a feature branch, and not from _develop_. See below for why.
 - __No merge-commits__
-If you have commits that looks like this _"Merge branch 'my-branch' into develop"_ or _"Merge branch 'develop' of https://github.com/nhnent/toast-haste.framework into develop"_ you're probaly using merge instead of [rebase](https://help.github.com/articles/about-git-rebase) locally. See below on _Handling updates from upstream_.
+If you have commits that looks like this _"Merge branch 'my-branch' into develop"_ or _"Merge branch 'develop' of https://github.com/nhnent/socket.io-client-unity3d into develop"_ you're probaly using merge instead of [rebase](https://help.github.com/articles/about-git-rebase) locally. See below on _Handling updates from upstream_.
 - __Squash commits__ Often we create temporary commits like _"Started implementing feature x"_ and then _"Did a bit more on feature x"_. Squash these commits together using [interactive rebase](https://help.github.com/articles/about-git-rebase). Also see [Squashing commits with rebase](http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html).
 - __Descriptive commit messages__ If a commit's message isn't descriptive, change it using [interactive rebase](https://help.github.com/articles/about-git-rebase). Refer to issues using `#issue`. Example of a bad message ~~"Small cleanup"~~. Example of good message: _"Removed Security.Claims header from FSM, which broke Mono build per #62"_. Don't be afraid to write long messages, if needed. Try to explain _why_ you've done the changes. The Erlang repo has some info on [writing good commit messages](https://github.com/erlang/otp/wiki/Writing-good-commit-messages).
 - __No one-commit-to-rule-them-all__ Large commits that changes too many things at the same time are very hard to review. Split large commits into smaller. See this [StackOverflow question](http://stackoverflow.com/questions/6217156/break-a-previous-commit-into-multiple-commits) for information on how to do this.
@@ -28,7 +28,7 @@ Especially if you modify something existing, be very clear! Have you changed any
 ### Getting started
 Make sure you have a [GitHub](https://github.com/) account.
 
-- Fork, clone, add upstream to the Haste framework repository. See [Fork a repo](https://help.github.com/articles/fork-a-repo) for more detailed instructions or follow the instructions below.
+- Fork, clone, add upstream to the Socket.io-Client-Unity3D framework repository. See [Fork a repo](https://help.github.com/articles/fork-a-repo) for more detailed instructions or follow the instructions below.
 
 - Fork by clicking _Fork_ on https://github.com/nhnent/socket.io-client-unity3d
 - Clone your fork locally.
