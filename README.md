@@ -71,7 +71,7 @@ dl_rtcs@nhnent.com
 
 ## License
 
-Socket.IO-Client-Unity3D is licensed under the MIT license, see LICENSE for details.
+Socket.IO-Client-Unity3D is licensed under the MIT license, see [LICENSE](https://github.com/nhnent/socket.io-client-unity3d/blob/master/LICENSE) for details.
 
 ```
 The MIT License (MIT)
