@@ -1,5 +1,5 @@
-# Contributing to Haste framework
-Haste framework is a large project and contributions are more than welcome, so thank you for wanting to contribute to Haste framework!
+# Contributing to Socket.IO-Client-Unity3D
+Contributions are more than welcome, so thank you for wanting to contribute to Socket.IO-Client-Unity3D!
 
 ---
 
@@ -30,16 +30,16 @@ Make sure you have a [GitHub](https://github.com/) account.
 
 - Fork, clone, add upstream to the Haste framework repository. See [Fork a repo](https://help.github.com/articles/fork-a-repo) for more detailed instructions or follow the instructions below.
 
-- Fork by clicking _Fork_ on https://github.com/nhnent/toast-haste.framework
+- Fork by clicking _Fork_ on https://github.com/nhnent/socket.io-client-unity3d
 - Clone your fork locally.
 ```
-git clone https://github.com/YOUR-USERNAME/haste.framework
+git clone https://github.com/YOUR-USERNAME/socket.io-client-unity3d
 ```
 - Add an upstream remote.
 ```
-git remote add upstream https://github.com/nhnent/toast-haste.framework
+git remote add upstream https://github.com/nhnent/socket.io-client-unity3d
 ```
-You now have two remotes: _upstream_ points to https://github.com/nhnent/toast-haste.framework, and _origin_ points to your fork on GitHub.
+You now have two remotes: _upstream_ points to https://github.com/nhnent/socket.io-client-unity3d, and _origin_ points to your fork on GitHub.
 
 - Make changes. See below.
 
@@ -50,7 +50,7 @@ New to Git? See https://help.github.com/articles/what-are-other-good-resources-f
 ### Making changes
 __Never__ work directly on _develop_ or _master_ and you should never send a pull request from master - always from a feature branch created by you.
 
-- Pick an [issue](https://github.com/nhnent/toast-haste.framework/issues). If no issue exists (search first) create one.
+- Pick an [issue](https://github.com/nhnent/socket.io-client-unity3d/issues). If no issue exists (search first) create one.
 -  Get any changes from _upstream_.
 ```
 git checkout develop
