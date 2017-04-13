@@ -33,7 +33,7 @@ Consider the performance test.
 ## Contributing
 
 * Source Code Contributions:
-    * Please follow the [Contribution Guidelines for Socket.IO-Client for Unity3D](https://github.com/nhnent/socket.io-client-unity3d/blob/master/CONTRIBUTING.md).
+    * Please follow the [Contribution Guidelines for Socket.IO-Client-Unity3D](https://github.com/nhnent/socket.io-client-unity3d/blob/master/CONTRIBUTING.md).
 
 ## Bug Reporting
 
