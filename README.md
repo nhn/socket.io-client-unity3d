@@ -17,6 +17,10 @@ Socket.io is Opensource Realtime application framework. Socket.io group page : h
 
     * Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.
 
+## Documetation
+
+Reference to the [Wiki section of GitHub](https://github.com/nhnent/socket.io-client-unity3d/wiki).
+
 ## Roadmap
 
 * At NHN Entertainment, we service Real-time Channel ServiceMultiplayer (a.k.a. RTCS) developed by NHNEnt Blackpick.
