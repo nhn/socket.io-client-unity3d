@@ -1,5 +1,5 @@
 # Socket.IO-Client-Unity3D
-[![Download](https://img.shields.io/badge/Download-1.0.0-blue.svg)](https://github.com/nhnent/socket.io-client-unity3d/releases)
+[![Download](https://img.shields.io/badge/Download-1.0.0-orange.svg)](https://github.com/nhnent/socket.io-client-unity3d/releases)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/nhnent/socket.io-client-unity3d/blob/master/LICENSE) 
 
 ## Features
