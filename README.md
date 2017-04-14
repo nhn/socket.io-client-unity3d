@@ -4,7 +4,7 @@ Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later
 
 ## Versioning
 
-* The version of Socket.IO-Client-Unity3D follows Semantic Versioning 2.0.
+* The version of Socket.IO-Client-Unity3D follows [Semantic Versioning 2.0](http://semver.org).
 
 * Given a version number MAJOR.MINOR.PATCH, increment the:
     i. MAJOR version when you make incompatible API changes,
