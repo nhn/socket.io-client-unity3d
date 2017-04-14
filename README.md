@@ -23,7 +23,7 @@ Reference to the [Wiki section of GitHub](https://github.com/nhnent/socket.io-cl
 
 ## Roadmap
 
-* At NHN Entertainment, we service Real-time Channel ServiceMultiplayer (a.k.a. RTCS) developed by NHNEnt Blackpick.
+* At NHN Entertainment, we service Real-Time Communication System (a.k.a. RTCS) developed by NHN Entertainment.
 * So, We will try to improve performance and convenience according to this roadmap.
 
 ### Milestones
