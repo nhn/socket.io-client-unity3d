@@ -7,15 +7,13 @@ Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later.
 Socket.io is Opensource Realtime application framework. Socket.io group page : https://github.com/socketio
 
 ## Versioning
-
 * The version of Socket.IO-Client-Unity3D follows [Semantic Versioning 2.0](http://semver.org).
+* Given a version number MAJOR.MINOR.PATCH, increment the
+  1 MAJOR version when you make incompatible API changes,
+  2 MINOR version when you add functionality in a backwards-compatible manner, and
+  3 PATCH version when you make backwards-compatible bug fixes.
 
-* Given a version number MAJOR.MINOR.PATCH, increment the:
-    i. MAJOR version when you make incompatible API changes,
-    ii. MINOR version when you add functionality in a backwards-compatible manner, and
-    iii. PATCH version when you make backwards-compatible bug fixes.
-
-    * Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.
+* Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.
 
 ## Documetation
 
