@@ -56,6 +56,7 @@ namespace socket.io {
 
         void Start() {
             gameObject.UpdateAsObservable()
+                .Sample(TimeSpan.FromSeconds(1f))
                 .Where(_ => _connectRequests.Count > 0 && !_socketInit.IsBusy)
                 .Select(_ => _connectRequests.Dequeue())
                 .SelectMany(c => _socketInit.InitAsObservable(c.Item1, c.Item2).Timeout(TimeSpan.FromSeconds(10f)))
