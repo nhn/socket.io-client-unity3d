@@ -21,22 +21,27 @@ namespace socket.io {
         /// <param name="url"> WWW URL of a server </param>
         /// <param name="socket"> a socket which will be connected </param>
         /// <returns></returns>
-        public IObservable<Socket> InitAsObservable(string url, Socket socket) {
-            _connectUrl = url;
+        public IObservable<Socket> InitAsObservable(string url, bool reconnection, int reconnectionAttempts, Socket socket) {
+            ConnectUrl = url;
             Socket = socket;
+            Reconnection = reconnection;
+            ReconnectionAttempts = reconnectionAttempts;
 
-            var matches = new Regex(_urlParamRgx).Matches(_connectUrl);
+            if (Reconnection && Socket.onReconnecting != null)
+                Socket.onReconnecting(ReconnectionAttempts);
+
+            var matches = new Regex(_urlParamRgx).Matches(ConnectUrl);
             foreach (var m in matches) {
                 var tokens = m.ToString().Split('?', '&', '=');
                 urlParams.Add(tokens[1], tokens[2]);
             }
 
-            _baseUrl = _connectUrl.Split('?')[0];
-            var matches2 = new Regex(_urlNamespaceRgx).Matches(_baseUrl);
+            BaseUrl = ConnectUrl.Split('?')[0];
+            var matches2 = new Regex(_urlNamespaceRgx).Matches(BaseUrl);
             Debug.Assert(matches2.Count <= 2);
 
             if (matches2.Count == 2) {
-                _baseUrl = matches2[0].ToString();
+                BaseUrl = matches2[0].ToString();
                 Socket.nsp = matches2[1].ToString();
             }
 
@@ -50,7 +55,7 @@ namespace socket.io {
         /// </summary>
         public string PollingUrl {
             get {
-                var builder = new StringBuilder(_baseUrl);
+                var builder = new StringBuilder(BaseUrl);
                 builder.Append("/socket.io/");
 
                 for (int i = 0; i < urlParams.Count; ++i) {
@@ -68,7 +73,7 @@ namespace socket.io {
         /// </summary>
         public string WebSocketUrl {
             get {
-                var builder = new StringBuilder(_baseUrl.Replace("http://", "ws://"));
+                var builder = new StringBuilder(BaseUrl.Replace("http://", "ws://"));
                 builder.Append("/socket.io/");
 
                 for (int i = 0; i < urlParams.Count; ++i) {
@@ -84,12 +89,12 @@ namespace socket.io {
         /// <summary>
         /// An URL which is given InitAsObservable() method's param.
         /// </summary>
-        string _connectUrl;
+        public string ConnectUrl { get; private set; }
 
         /// <summary>
-        /// An URL which has no params and no namespace.
+        /// An URL which remove params and namespace string from ConnectUrl.
         /// </summary>
-        string _baseUrl;
+        public string BaseUrl { get; private set; }
 
         /// <summary>
         /// Regular expression for extracting params from URL
@@ -107,7 +112,12 @@ namespace socket.io {
         public Dictionary<string, string> urlParams = new Dictionary<string, string>();
         #endregion
 
+        public bool Reconnection { get; private set; }
+
+        public int ReconnectionAttempts { get; private set; }
+
         public Socket Socket { get; private set; }
+        
 
         /// <summary>
         /// Return weather Socket is current working on initialization process or not
@@ -139,20 +149,17 @@ namespace socket.io {
             urlParams.Add("t", TimeStamp.Now);
 
             // Try get WebSocketTrigger instance if a connection already established _baseUrl.
-            var webSocketTrigger = SocketManager.Instance.GetWebSocketTrigger(_baseUrl);
-            if (webSocketTrigger == null) {
+            var webSocketTrigger = SocketManager.Instance.GetWebSocketTrigger(BaseUrl);
+            if (webSocketTrigger == null || !webSocketTrigger.IsConnected) {
                 var www = new WWW(PollingUrl);
                 while (!www.isDone && !cancelToken.IsCancellationRequested)
                     yield return null;
 
-                if (cancelToken.IsCancellationRequested) {
-                    CleanUp();
+                if (cancelToken.IsCancellationRequested)
                     yield break;
-                }
 
                 if (www.error != null) {
                     observer.OnError(new Exception(www.error));
-                    CleanUp();
                     yield break;
                 }
 
@@ -163,8 +170,10 @@ namespace socket.io {
                     urlParams.Add("sid", answer.sid);
                 }
 
-                webSocketTrigger = new GameObject(string.Format("webSocket - {0}", _baseUrl)).AddComponent<WebSocketTrigger>();
-                SocketManager.Instance.RegisterWebSocketTrigger(_baseUrl, webSocketTrigger);
+                if (webSocketTrigger == null) {
+                    webSocketTrigger = new GameObject(string.Format("WebSocket - {0}", BaseUrl)).AddComponent<WebSocketTrigger>();
+                    SocketManager.Instance.RegisterWebSocketTrigger(BaseUrl, webSocketTrigger);
+                }
             }
 
             urlParams["transport"] = "websocket";
@@ -187,20 +196,26 @@ namespace socket.io {
                 webSocketTrigger.WebSocket.Send(new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.CONNECT, Socket.nsp, string.Empty).Encode());
 
             // Start to receive a incoming WebSocket packet
+            var capturedUrl = ConnectUrl;
             var capturedSocket = Socket;
             webSocketTrigger.OnRecvAsObservable(WebSocketUrl).Subscribe(r => {
                 capturedSocket.OnRecvWebSocketEvent(r);
+            }, e => {
+                Debug.LogErrorFormat("socket.io => {0} got an error: {1}", capturedSocket.gameObject.name, e.ToString());
+
+                if (SocketManager.Instance.Reconnection)
+                    SocketManager.Instance.Reconnect(capturedUrl, 1, capturedSocket);
             }).AddTo(Socket);
             
             observer.OnNext(Socket);
             observer.OnCompleted();
-
-            CleanUp();
         }
         
-        void CleanUp() {
+        public void CleanUp() {
             Socket = null;
-            _connectUrl = string.Empty;
+            ConnectUrl = string.Empty;
+            Reconnection = false;
+            ReconnectionAttempts = 0;
             urlParams.Clear();
         }
 

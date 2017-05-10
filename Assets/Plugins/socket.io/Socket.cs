@@ -56,7 +56,7 @@ namespace socket.io {
                         onConnect();
                 }
                 else if (pkt.socketPktType == SocketPacketTypes.DISCONNECT) {
-                    Debug.Log("Socket disconnected");
+                    Debug.LogFormat("socket.io => {0} disconnected", gameObject.name);
                 }
                 else if (pkt.socketPktType == SocketPacketTypes.ACK) {
                     Debug.Assert(pkt.HasId && pkt.HasBody);
@@ -145,7 +145,7 @@ namespace socket.io {
             evtName == "reconnecting" ||
             evtName == "connectError" ||
             evtName == "reconnectError") {
-                Debug.LogErrorFormat("{0} is reserved for system events :(", evtName);
+                Debug.LogErrorFormat("socket.io => {0} event is reserved and not allowed to assign as user events :(", evtName);
                 return;
             }
 

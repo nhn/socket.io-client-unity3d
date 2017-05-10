@@ -15,14 +15,14 @@ namespace socket.io {
     public class WebSocketWrapper {
         
         public WebSocketWrapper(Uri url) {
-            _url = url;
+            Url = url;
 
-            var protocol = _url.Scheme;
+            var protocol = Url.Scheme;
             if (!protocol.Equals("ws") && !protocol.Equals("wss"))
                 throw new ArgumentException("Unsupported protocol: " + protocol);
         }
 
-        readonly Uri _url;
+        public Uri Url { get; private set; }
 
         public bool IsConnected {
             get {
@@ -31,7 +31,7 @@ namespace socket.io {
         }
 
         public void Connect() {
-            ConnectInternal(_url.ToString());
+            ConnectInternal(Url.ToString());
         }
 
         public void Close() {
