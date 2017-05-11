@@ -12,6 +12,10 @@ namespace Sample {
             var serverUrl = "http://localhost:4444";
             var socket = Socket.Connect(serverUrl);
 
+            socket.On("connect", () => {
+                Debug.Log("Connected~~");
+            });
+
             // "news" 이벤트 처리 Receive
             socket.On("news", (string data) => {
                 Debug.Log(data);

@@ -14,17 +14,24 @@ namespace socket.io {
 
         public IObservable<string> OnRecvAsObservable(string url) {
             StartCoroutine(PingPong());
+            
+            if (_onRecv == null)
+                _onRecv = new Subject<string>();
+
             return _onRecv;
         }
 
         protected override void RaiseOnCompletedOnDestroy() {
-            if (_onRecv != null)
+            if (_onRecv != null) {
                 _onRecv.OnCompleted();
+                _onRecv = null;
+            }
+
             if (!IsConnected)
                 WebSocket.Close();
         }
 
-        readonly Subject<string> _onRecv = new Subject<string>();
+        Subject<string> _onRecv;
 
         /// <summary>
         /// Ping-Pong coroutine to keep connection alive.
@@ -34,48 +41,50 @@ namespace socket.io {
             while (WebSocket.IsConnected) {
                 yield return new WaitForSeconds(10f);
                 WebSocket.Send(Packet.Ping);
-                Debug.Log("socket.io => ping~");
+
+                Debug.LogFormat("socket.io => {0} ping~", WebSocket.Url.ToString());
             }
         }
         
         public WebSocketWrapper WebSocket { get; set; }
 
         public bool IsConnected {
-            get {
-                return WebSocket != null && WebSocket.IsConnected;
-            }
+            get { return WebSocket != null && WebSocket.IsConnected; }
         }
 
         public bool IsProbed { get; set; }
 
         public bool IsUpgraded { get; set; }
 
-        public class WebSocketError : Exception {
-            public WebSocketError(string message) : base(message) { }
+        public class WebSocketErrorException : Exception {
+            public WebSocketErrorException(string message) : base(message) { }
         }
 
         void Update() {
-            if (!IsConnected)
-                return;
+            var err = WebSocket.GetLastError();
 
-            var error = WebSocket.GetLastError();
-            if (error != string.Empty) {
-                _onRecv.OnError(new WebSocketError(error));
+            if (err != string.Empty) {
+                _onRecv.OnError(new WebSocketErrorException(err));
+                _onRecv.Dispose();
+                _onRecv = null;
                 IsProbed = false;
                 IsUpgraded = false;
             }
 
-            var recvData = WebSocket.Recv();
-            if (recvData != null) {
-                if (recvData == Packet.ProbeAnswer) {
-                    IsProbed = true;
-                    Debug.Log("socket.io => probed~");
-                }
-                else if (recvData == Packet.Pong) {
-                    Debug.Log("socket.io => pong~");
-                }
-                else {
-                    _onRecv.OnNext(recvData);
+            if (IsConnected) {
+                var recvData = WebSocket.Recv();
+                if (recvData != null) {
+                    if (recvData == Packet.ProbeAnswer) {
+                        IsProbed = true;
+                        Debug.LogFormat("socket.io => {0} probed~", WebSocket.Url.ToString());
+                    }
+                    else if (recvData == Packet.Pong) {
+                        Debug.LogFormat("socket.io => {0} pong~", WebSocket.Url.ToString());
+                    }
+                    else {
+                        if (_onRecv != null)
+                            _onRecv.OnNext(recvData);
+                    }
                 }
             }
         }
