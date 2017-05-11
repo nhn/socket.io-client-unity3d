@@ -121,6 +121,9 @@ namespace socket.io {
 
                         Debug.LogErrorFormat("socket.io => {0} connection timed out!!", _socketInit.Socket.gameObject.name);
                     }
+                    else if (e is WWWErrorException){
+                        Debug.LogErrorFormat("socket.io => {0} got WWW error: {1}", _socketInit.Socket.gameObject.name, (e as WWWErrorException).RawErrorMessage);
+                    }
                     else {
                         Debug.LogErrorFormat("socket.io => {0} got an unknown error: {1}", _socketInit.Socket.gameObject.name, e.ToString());
                     }
@@ -132,7 +135,8 @@ namespace socket.io {
                         if (_socketInit.Socket.onReconnectError != null)
                             _socketInit.Socket.onReconnectError(e);
 
-                        Reconnect(_socketInit.ConnectUrl, _socketInit.ReconnectionAttempts + 1, _socketInit.Socket);
+                        if (Reconnection)
+                            Reconnect(_socketInit.ConnectUrl, _socketInit.ReconnectionAttempts + 1, _socketInit.Socket);
                     }
                     else {
                         if (_socketInit.Socket.onConnectError != null)
