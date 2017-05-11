@@ -159,7 +159,7 @@ namespace socket.io {
                     yield break;
 
                 if (www.error != null) {
-                    observer.OnError(new Exception(www.error));
+                    observer.OnError(new WWWErrorException(www, www.text));
                     yield break;
                 }
 

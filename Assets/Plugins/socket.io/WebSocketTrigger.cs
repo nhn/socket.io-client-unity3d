@@ -56,15 +56,15 @@ namespace socket.io {
 
         public bool IsUpgraded { get; set; }
 
-        public class WebSocketException : Exception {
-            public WebSocketException(string message) : base(message) { }
+        public class WebSocketErrorException : Exception {
+            public WebSocketErrorException(string message) : base(message) { }
         }
 
         void Update() {
             var err = WebSocket.GetLastError();
 
             if (err != string.Empty) {
-                _onRecv.OnError(new WebSocketException(err));
+                _onRecv.OnError(new WebSocketErrorException(err));
                 _onRecv.Dispose();
                 _onRecv = null;
                 IsProbed = false;
