@@ -16,14 +16,14 @@ namespace Sample {
                 Debug.Log("Connected~~");
             });
 
-            // "news" 이벤트 처리 Receive
+            // receive "news" event
             socket.On("news", (string data) => {
                 Debug.Log(data);
 
-                // "my other event" 이벤트 Send
+                // send "my other event" event
                 socket.Emit(
-                    "my other event",       // 이벤트명
-                    "{ \"my\": \"data\" }"  // 데이터 (Json 텍스트)
+                    "my other event",       // event-name
+                    "{ \"my\": \"data\" }"  // data (in Json-format)
                     );
             });
         }

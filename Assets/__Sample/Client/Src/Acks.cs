@@ -14,10 +14,10 @@ namespace Sample {
 
             socket.On("connect", () => {
 
-                // "ferret" 이벤트 Send
+                // send "ferret" event
                 socket.Emit(
                     "ferret", "\"toby\"", 
-                    (string r) => { Debug.Log(r); } // Ack 콜백 셋팅
+                    (string r) => { Debug.Log(r); } // set callback handler for Ack
                     );
             });
         }

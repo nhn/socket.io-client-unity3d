@@ -16,20 +16,15 @@ function handler (req, res) {
     });
 }
 
-// Socket.io 스타트
+// Start socket.io
 var io = require('socket.io')(app);
 
-// chat 네임스페이스
-var chat = io
-  .of('/chat')
-  .on('connection', function (socket) {
-    chat.emit('a message', { everyone: 'in', '/chat': 'will get' });
-    socket.emit('a message', { that: 'only', '/chat': 'will get' });
-  });
+// handle client's connection event
+io.on('connection', function (socket) { 
 
-// news 네임스페이스
-var news = io
-  .of('/news')
-  .on('connection', function (socket) {
-    socket.emit('item', { news: 'item' });
-  });
+   socket.on('ferret', function (name, fn) {
+        // send 'woot' string as an ack message
+        fn('woot');
+    }); 
+   
+});

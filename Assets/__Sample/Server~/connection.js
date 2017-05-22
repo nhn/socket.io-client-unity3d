@@ -16,10 +16,10 @@ function handler (req, res) {
   });
 }
 
-// Socket.io 스타트
+// Start socket.io
 var io = require('socket.io')(app);
 
-// 클라이언트 컨넥션 이벤트 처리
+// handle client's connection event
 io.on('connection', function (socket) {
   console.log('Hello, Socket.io~');
 });
