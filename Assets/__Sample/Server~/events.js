@@ -16,14 +16,18 @@ function handler (req, res) {
     });
 }
 
-// Socket.io 스타트
+// Start socket.io
 var io = require('socket.io')(app);
 
-// 클라이언트 컨넥션 이벤트 처리
-io.on('connection', function (socket) { 
+// handle client's connection event
+io.on('connection', function (socket) {
 
-   socket.on('ferret', function (name, fn) {
-        // 'woot' 문자열을 Ack 메세지로 보냄
-        fn('woot');
-    }); 
+    // send 'news' event
+    socket.emit('news', { hello: 'world' });
+
+    // receive 'my other event' event
+    socket.on('my other event', function(data) {
+        console.log(data);
+    });
+    
 });

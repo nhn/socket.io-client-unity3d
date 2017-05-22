@@ -16,10 +16,10 @@ function handler (req, res) {
     });
 }
 
-// Socket.io 스타트
+// Start socket.io
 var io = require('socket.io')(app);
 
-// chat 네임스페이스
+// chat nsp
 var chat = io
   .of('/chat')
   .on('connection', function (socket) {
@@ -27,7 +27,7 @@ var chat = io
     socket.emit('a message', { that: 'only', '/chat': 'will get' });
   });
 
-// news 네임스페이스
+// news nsp
 var news = io
   .of('/news')
   .on('connection', function (socket) {
