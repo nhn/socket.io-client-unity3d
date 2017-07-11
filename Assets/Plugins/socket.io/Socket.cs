@@ -128,6 +128,7 @@ namespace socket.io {
         public Action onConnectTimeOut;
         public Action onReconnectAttempt;
         public Action onReconnectFailed;
+        public Action onDisconnect;
         public Action<int> onReconnect;
         public Action<int> onReconnecting;
         public Action<Exception> onConnectError;
@@ -141,6 +142,7 @@ namespace socket.io {
             evtName == "connectTimeOut" ||
             evtName == "reconnectAttempt" ||
             evtName == "reconnectFailed" ||
+            evtName == "disconnet" ||
             evtName == "reconnect" ||
             evtName == "reconnecting" ||
             evtName == "connectError" ||
@@ -164,6 +166,8 @@ namespace socket.io {
                 onReconnectAttempt = callback;
             else if (evtName == "reconnectFailed")
                 onReconnectFailed = callback;
+            else if (evtName == "disconnect")
+                onDisconnect = callback;
             else
                 Debug.Assert(false);
         }
