@@ -198,14 +198,17 @@ namespace socket.io {
             // Start to receive a incoming WebSocket packet
             var capturedUrl = ConnectUrl;
             var capturedSocket = Socket;
-            webSocketTrigger.OnRecvAsObservable(WebSocketUrl).Subscribe(r => {
-                capturedSocket.OnRecvWebSocketEvent(r);
-            }, e => {
-                Debug.LogErrorFormat("socket.io => {0} got an error: {1}", capturedSocket.gameObject.name, e.ToString());
+            webSocketTrigger.OnRecvAsObservable(WebSocketUrl)
+                .DoOnError(e => {
+                    Debug.LogErrorFormat("socket.io => {0} got an error: {1}", capturedSocket.gameObject.name, e.ToString());
 
-                if (SocketManager.Instance.Reconnection)
-                    SocketManager.Instance.Reconnect(capturedUrl, 1, capturedSocket);
-            }).AddTo(Socket);
+                    if (capturedSocket.onDisconnect != null)
+                        capturedSocket.onDisconnect();
+                    if (SocketManager.Instance.Reconnection)
+                        SocketManager.Instance.Reconnect(capturedUrl, 1, capturedSocket);
+                })
+                .Subscribe(r => { capturedSocket.OnRecvWebSocketEvent(r); })
+                .AddTo(Socket);
             
             observer.OnNext(Socket);
             observer.OnCompleted();
