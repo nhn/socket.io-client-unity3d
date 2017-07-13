@@ -35,14 +35,14 @@ namespace socket.io {
 
         public bool IsConnected {
             get {
-                return (WebSocketTrigger != null && 
-                    WebSocketTrigger.WebSocket != null&& 
-                    WebSocketTrigger.WebSocket.IsConnected && 
+                return (WebSocketTrigger != null &&
+                    WebSocketTrigger.WebSocket != null &&
+                    WebSocketTrigger.WebSocket.IsConnected &&
                     WebSocketTrigger.IsUpgraded
                     );
             }
         }
-        
+
         public void OnRecvWebSocketEvent(string data) {
             if (data != Packet.ProbeAnswer)
                 DispatchPacket(data.Decode());
@@ -96,21 +96,32 @@ namespace socket.io {
             if (WebSocketTrigger == null)
                 return;
 
-            if (ack != null) {
-                var pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}"",{1}]", evtName, data));
-                WebSocketTrigger.WebSocket.Send(pkt.Encode());
+            Packet pkt = null;
 
+            if (ack != null) {
+                if (data.Length > 0) {
+                    pkt = data.StartsWith("[") || data.StartsWith("{") ?
+                        new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}"",{1}]", evtName, data)) :
+                        new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}"",""{1}""]", evtName, data));
+                }
+                else {
+                    pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}""]", evtName));
+                }
+
+                WebSocketTrigger.WebSocket.Send(pkt.Encode());
                 _acks.Add(pkt.id, ack);
             }
             else {
                 if (data.Length > 0) {
-                    var pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}"",{1}]", evtName, data));
-                    WebSocketTrigger.WebSocket.Send(pkt.Encode());
+                    pkt = data.StartsWith("[") || data.StartsWith("{") ?
+                        new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}"",{1}]", evtName, data)) :
+                        new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}"",""{1}""]", evtName, data));
                 }
                 else {
-                    var pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}""]", evtName));
-                    WebSocketTrigger.WebSocket.Send(pkt.Encode());
+                    pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}""]", evtName));
                 }
+
+                WebSocketTrigger.WebSocket.Send(pkt.Encode());
             }
         }
 
