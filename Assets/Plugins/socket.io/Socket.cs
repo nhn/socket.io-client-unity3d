@@ -7,6 +7,8 @@ namespace socket.io {
 
     public class Socket : MonoBehaviour {
 
+        public string url;
+
         /// <summary>
         /// Namespace ("/" is the default namespace which means global namespace.)
         /// </summary>
@@ -51,14 +53,7 @@ namespace socket.io {
                 return;
 
             if (pkt.enginePktType == EnginePacketTypes.MESSAGE) {
-                if (pkt.socketPktType == SocketPacketTypes.CONNECT) {
-                    if (onConnect != null)
-                        onConnect();
-                }
-                else if (pkt.socketPktType == SocketPacketTypes.DISCONNECT) {
-                    Debug.LogFormat("socket.io => {0} disconnected", gameObject.name);
-                }
-                else if (pkt.socketPktType == SocketPacketTypes.ACK) {
+                if (pkt.socketPktType == SocketPacketTypes.ACK) {
                     Debug.Assert(pkt.HasId && pkt.HasBody);
 
                     _acks[pkt.id](pkt.body);
@@ -81,6 +76,10 @@ namespace socket.io {
                         _evtHandlers[evtName](data);
                     }
                 }
+                //else if (pkt.socketPktType == SocketPacketTypes.CONNECT) {
+                //}
+                //else if (pkt.socketPktType == SocketPacketTypes.DISCONNECT) {
+                //}
             }
             //else if (pkt.enginePktType == EnginePacketTypes.PONG) {}
             //else {}
@@ -128,6 +127,7 @@ namespace socket.io {
         public Action onConnectTimeOut;
         public Action onReconnectAttempt;
         public Action onReconnectFailed;
+        public Action onDisconnect;
         public Action<int> onReconnect;
         public Action<int> onReconnecting;
         public Action<Exception> onConnectError;
@@ -141,6 +141,7 @@ namespace socket.io {
             evtName == "connectTimeOut" ||
             evtName == "reconnectAttempt" ||
             evtName == "reconnectFailed" ||
+            evtName == "disconnet" ||
             evtName == "reconnect" ||
             evtName == "reconnecting" ||
             evtName == "connectError" ||
@@ -164,6 +165,8 @@ namespace socket.io {
                 onReconnectAttempt = callback;
             else if (evtName == "reconnectFailed")
                 onReconnectFailed = callback;
+            else if (evtName == "disconnect")
+                onDisconnect = callback;
             else
                 Debug.Assert(false);
         }

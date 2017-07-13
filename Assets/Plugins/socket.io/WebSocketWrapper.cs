@@ -119,6 +119,7 @@ namespace socket.io {
         }
 #else
         WebSocketSharp.WebSocket _webSocket;
+
         readonly Queue<byte[]> _messages = new Queue<byte[]>();
         readonly Queue<string> _errors = new Queue<string>();
         readonly object _recvLock = new object();

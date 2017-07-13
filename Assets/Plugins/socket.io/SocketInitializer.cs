@@ -21,22 +21,21 @@ namespace socket.io {
         /// <param name="url"> WWW URL of a server </param>
         /// <param name="socket"> a socket which will be connected </param>
         /// <returns></returns>
-        public IObservable<Socket> InitAsObservable(string url, bool reconnection, int reconnectionAttempts, Socket socket) {
-            ConnectUrl = url;
+        public IObservable<Socket> InitAsObservable(Socket socket, bool reconnection, int reconnectionAttempts) {
             Socket = socket;
             Reconnection = reconnection;
             ReconnectionAttempts = reconnectionAttempts;
 
             if (Reconnection && Socket.onReconnecting != null)
                 Socket.onReconnecting(ReconnectionAttempts);
-
-            var matches = new Regex(_urlParamRgx).Matches(ConnectUrl);
+            
+            var matches = new Regex(_urlParamRgx).Matches(Socket.url);
             foreach (var m in matches) {
                 var tokens = m.ToString().Split('?', '&', '=');
                 urlParams.Add(tokens[1], tokens[2]);
             }
-
-            BaseUrl = ConnectUrl.Split('?')[0];
+            
+            BaseUrl = Socket.url.Split('?')[0];
             var matches2 = new Regex(_urlNamespaceRgx).Matches(BaseUrl);
             Debug.Assert(matches2.Count <= 2);
 
@@ -87,11 +86,6 @@ namespace socket.io {
         }
 
         /// <summary>
-        /// An URL which is given InitAsObservable() method's param.
-        /// </summary>
-        public string ConnectUrl { get; private set; }
-
-        /// <summary>
         /// An URL which remove params and namespace string from ConnectUrl.
         /// </summary>
         public string BaseUrl { get; private set; }
@@ -118,14 +112,6 @@ namespace socket.io {
 
         public Socket Socket { get; private set; }
         
-
-        /// <summary>
-        /// Return weather Socket is current working on initialization process or not
-        /// </summary>
-        public bool IsBusy {
-            get { return Socket != null; }
-        }
-
         /// <summary>
         /// The json object to parse the response of PollingURL
         /// </summary>
@@ -185,8 +171,18 @@ namespace socket.io {
             webSocketTrigger.WebSocket.Connect();
             yield return new WaitUntil(() => webSocketTrigger.IsConnected);
 
+            if (cancelToken.IsCancellationRequested) {
+                webSocketTrigger.WebSocket.Close();
+                yield break;
+            }
+
             webSocketTrigger.WebSocket.Send(Packet.Probe);
             yield return new WaitUntil(() => webSocketTrigger.IsProbed);
+
+            if (cancelToken.IsCancellationRequested) {
+                webSocketTrigger.WebSocket.Close();
+                yield break;
+            }
 
             webSocketTrigger.WebSocket.Send(new Packet(EnginePacketTypes.UPGRADE).Encode());
             webSocketTrigger.IsUpgraded = true;
@@ -195,17 +191,13 @@ namespace socket.io {
             if (Socket.HasNamespace)
                 webSocketTrigger.WebSocket.Send(new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.CONNECT, Socket.nsp, string.Empty).Encode());
 
-            // Start to receive a incoming WebSocket packet
-            var capturedUrl = ConnectUrl;
             var capturedSocket = Socket;
-            webSocketTrigger.OnRecvAsObservable(WebSocketUrl).Subscribe(r => {
-                capturedSocket.OnRecvWebSocketEvent(r);
-            }, e => {
-                Debug.LogErrorFormat("socket.io => {0} got an error: {1}", capturedSocket.gameObject.name, e.ToString());
+            var capturedReconnectionAttempts = ReconnectionAttempts;
 
-                if (SocketManager.Instance.Reconnection)
-                    SocketManager.Instance.Reconnect(capturedUrl, 1, capturedSocket);
-            }).AddTo(Socket);
+            // Start to receive a incoming WebSocket packet
+            webSocketTrigger.OnRecvAsObservable(WebSocketUrl)
+                .Subscribe(r => { capturedSocket.OnRecvWebSocketEvent(r); })
+                .AddTo(Socket);
             
             observer.OnNext(Socket);
             observer.OnCompleted();
@@ -213,7 +205,6 @@ namespace socket.io {
         
         public void CleanUp() {
             Socket = null;
-            ConnectUrl = string.Empty;
             Reconnection = false;
             ReconnectionAttempts = 0;
             urlParams.Clear();

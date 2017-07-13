@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UniRx;
-using UniRx.Triggers;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -35,18 +34,27 @@ namespace socket.io {
         /// </summary>
         public int ReconnectionDelay { get; set; }
 
-
         public Socket Connect(string url) {
             var socket = new GameObject(string.Format("socket.io - {0}", url)).AddComponent<Socket>();
             socket.transform.parent = transform;
+            socket.url = url;
 
-            _connectRequests.Add(Tuple.Create(url, false, 0, socket, DateTime.Now));
+            _connectRequests.Add(Tuple.Create(socket, false, 0, DateTime.Now));
 
             return socket;
         }
 
-        public void Reconnect(string url, int reconnectionAttempts, Socket socket) {
-            _connectRequests.Add(Tuple.Create(url, true, reconnectionAttempts, socket, DateTime.Now.AddMilliseconds(ReconnectionDelay)));
+        /// <summary>
+        /// Reconnect method (Users seldom call this method, instead SocketManager will call when Reconnection property is true)
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="reconnectionAttempts"></param>
+        public void Reconnect(Socket socket, int reconnectionAttempts) {
+            // Check if request already pended
+            if (_connectRequests.Any(r => r.Item1 == socket))
+                return;
+
+            _connectRequests.Add(Tuple.Create(socket, true, reconnectionAttempts, DateTime.Now.AddMilliseconds(ReconnectionDelay)));
 
             if (socket.onReconnectAttempt != null)
                 socket.onReconnectAttempt();
@@ -69,10 +77,10 @@ namespace socket.io {
         /// The pended requests to connect a server
         /// (Item1: Url, Item2: Reconnection, Item3: ReconnectionAttempts, Item4: Socket ref, Item5: TimeStamp)
         /// </summary>
-        readonly List<Tuple<string, bool, int, Socket, DateTime>> _connectRequests = new List<Tuple<string, bool, int, Socket, DateTime>>();
+        readonly List<Tuple<Socket, bool, int, DateTime>> _connectRequests = new List<Tuple<Socket, bool, int, DateTime>>();
 
         /// <summary>
-        /// WebSocketTrigger instances (WebSocketTrigger is almost same with a sesstion object)
+        /// WebSocketTrigger instances (WebSocketTrigger is almost same with a session object)
         /// </summary>
         readonly Dictionary<string, WebSocketTrigger> _webSocketTriggers = new Dictionary<string, WebSocketTrigger>();
 
@@ -88,76 +96,88 @@ namespace socket.io {
             return _webSocketTriggers.ContainsKey(url) ? _webSocketTriggers[url] : null;
         }
 
+        /// <summary>
+        /// Return a Socket instance if there is a connection to url param
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public Socket GetSocket(string url) {
             var go = GameObject.Find(string.Format("socket.io - {0}", url));
             return (go != null) ? go.GetComponent<Socket>() : null;
         }
 
+        /// <summary>
+        /// Current async connection request (If this value is not null, it means a connection is on running~)
+        /// </summary>
+        IDisposable _cancelConnectRequest;
+
         void Update() {
-            int i = 0;
-        }
+            if (_cancelConnectRequest != null || !_connectRequests.Any(c => c.Item4 < DateTime.Now))
+                return;
+            
+            var index = _connectRequests.FindIndex(c => c.Item4 < DateTime.Now);
+            var request = _connectRequests[index];
+            _connectRequests.RemoveAt(index);
 
-        void Start() {
-            gameObject.UpdateAsObservable()
-                .Sample(TimeSpan.FromSeconds(1f))
-                .Where(_ => !_socketInit.IsBusy && _connectRequests.Any(c => c.Item5 < DateTime.Now))
-                .Select(_ => {
-                    var i = _connectRequests.FindIndex(c => c.Item5 < DateTime.Now);
-                    Debug.Assert(i != -1);
+            _cancelConnectRequest = _socketInit.InitAsObservable(request.Item1, request.Item2, request.Item3)
+                  .Timeout(TimeSpan.FromMilliseconds(TimeOut))
+                  .DoOnError(e => {
+                      if (e is TimeoutException) {
+                          if (_socketInit.Socket.onConnectTimeOut != null)
+                              _socketInit.Socket.onConnectTimeOut();
 
-                    var ret = _connectRequests[i];
-                    _connectRequests.RemoveAt(i);
+                          Debug.LogErrorFormat(
+                              "socket.io => {0} connection timed out!!", 
+                              _socketInit.Socket.gameObject.name
+                              );
+                      }
+                      else if (e is WWWErrorException) {
+                          Debug.LogErrorFormat(
+                              "socket.io => {0} got WWW error: {1}", 
+                              _socketInit.Socket.gameObject.name, 
+                              (e as WWWErrorException).RawErrorMessage
+                              );
+                      }
+                      else {
+                          Debug.LogErrorFormat(
+                              "socket.io => {0} got an unknown error: {1}", 
+                              _socketInit.Socket.gameObject.name, 
+                              e.ToString()
+                              );
+                      }
 
-                    return ret;
-                })
-                .SelectMany(c =>
-                    _socketInit.InitAsObservable(c.Item1, c.Item2, c.Item3, c.Item4)
-                    .Timeout(TimeSpan.FromMilliseconds(TimeOut))
-                    )
-                .OnErrorRetry((Exception e) => {
-                    if (e is TimeoutException) {
-                        if (_socketInit.Socket.onConnectTimeOut != null)
-                            _socketInit.Socket.onConnectTimeOut();
+                      if (_socketInit.Reconnection) {
+                          if (_socketInit.Socket.onReconnectFailed != null)
+                              _socketInit.Socket.onReconnectFailed();
 
-                        Debug.LogErrorFormat("socket.io => {0} connection timed out!!", _socketInit.Socket.gameObject.name);
-                    }
-                    else if (e is WWWErrorException){
-                        Debug.LogErrorFormat("socket.io => {0} got WWW error: {1}", _socketInit.Socket.gameObject.name, (e as WWWErrorException).RawErrorMessage);
-                    }
-                    else {
-                        Debug.LogErrorFormat("socket.io => {0} got an unknown error: {1}", _socketInit.Socket.gameObject.name, e.ToString());
-                    }
+                          if (_socketInit.Socket.onReconnectError != null)
+                              _socketInit.Socket.onReconnectError(e);
 
-                    if (_socketInit.Reconnection) {
-                        if (_socketInit.Socket.onReconnectFailed != null)
-                            _socketInit.Socket.onReconnectFailed();
+                          if (Reconnection)
+                              Reconnect(_socketInit.Socket, _socketInit.ReconnectionAttempts + 1);
+                      }
+                      else {
+                          if (_socketInit.Socket.onConnectError != null)
+                              _socketInit.Socket.onConnectError(e);
+                      }
 
-                        if (_socketInit.Socket.onReconnectError != null)
-                            _socketInit.Socket.onReconnectError(e);
+                      _socketInit.CleanUp();
+                      _cancelConnectRequest = null;
+                  })
+                  .DoOnCompleted(() => {
+                      if (_socketInit.Reconnection) {
+                          if (_socketInit.Socket.onReconnect != null)
+                              _socketInit.Socket.onReconnect(_socketInit.ReconnectionAttempts);
+                      }
+                      else {
+                          if (_socketInit.Socket.onConnect != null)
+                              _socketInit.Socket.onConnect();
+                      }
 
-                        if (Reconnection)
-                            Reconnect(_socketInit.ConnectUrl, _socketInit.ReconnectionAttempts + 1, _socketInit.Socket);
-                    }
-                    else {
-                        if (_socketInit.Socket.onConnectError != null)
-                            _socketInit.Socket.onConnectError(e);
-                    }
-
-                    _socketInit.CleanUp();
-                })
-                .Subscribe(_ => {
-                    if (_socketInit.Reconnection) {
-                        if (_socketInit.Socket.onReconnect != null)
-                            _socketInit.Socket.onReconnect(_socketInit.ReconnectionAttempts);
-
-                        Debug.LogFormat("socket.io => {0} has been reconnected~ :)", _socketInit.Socket.gameObject.name);
-                    }
-                    else {
-                        Debug.LogFormat("socket.io => {0} has been connected~ :)", _socketInit.Socket.gameObject.name);
-                    }
-
-                    _socketInit.CleanUp();
-                });
+                      _socketInit.CleanUp();
+                      _cancelConnectRequest = null;
+                  })
+                  .Subscribe();
         }
 
     }

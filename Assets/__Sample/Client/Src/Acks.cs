@@ -13,7 +13,6 @@ namespace Sample {
             var socket = Socket.Connect(serverUrl);
 
             socket.On("connect", () => {
-
                 // send "ferret" event
                 socket.Emit(
                     "ferret", "\"toby\"", 

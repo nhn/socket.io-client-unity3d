@@ -2,19 +2,20 @@
 using UniRx;
 using UniRx.Triggers;
 using System;
+using System.Linq;
 using System.Collections;
 
 
 namespace socket.io {
 
     /// <summary>
-    /// UniRX ObservableTrigger which pass-through received packet data as observable object
+    /// Stream-out received packet data as observable
     /// </summary>
     public class WebSocketTrigger : ObservableTriggerBase {
 
         public IObservable<string> OnRecvAsObservable(string url) {
             StartCoroutine(PingPong());
-            
+
             if (_onRecv == null)
                 _onRecv = new Subject<string>();
 
@@ -45,7 +46,7 @@ namespace socket.io {
                 Debug.LogFormat("socket.io => {0} ping~", WebSocket.Url.ToString());
             }
         }
-        
+
         public WebSocketWrapper WebSocket { get; set; }
 
         public bool IsConnected {
@@ -56,39 +57,64 @@ namespace socket.io {
 
         public bool IsUpgraded { get; set; }
 
-        public class WebSocketErrorException : Exception {
-            public WebSocketErrorException(string message) : base(message) { }
+        void Update() {
+            LastWebSocketError = WebSocket.GetLastError();
+            if (!string.IsNullOrEmpty(LastWebSocketError)) {
+                CheckAndHandleWebSocketDisconnect();
+                Debug.LogError(LastWebSocketError);
+            }
+
+            if (IsConnected)
+                ReceiveWebSocketData();
         }
 
-        void Update() {
-            var err = WebSocket.GetLastError();
+        void ReceiveWebSocketData() {
+            var recvData = WebSocket.Recv();
+            if (string.IsNullOrEmpty(recvData))
+                return;
 
-            if (err != string.Empty) {
-                _onRecv.OnError(new WebSocketErrorException(err));
+            if (recvData == Packet.ProbeAnswer) {
+                IsProbed = true;
+                Debug.LogFormat("socket.io => {0} probed~", WebSocket.Url.ToString());
+            }
+            else if (recvData == Packet.Pong) {
+                Debug.LogFormat("socket.io => {0} pong~", WebSocket.Url.ToString());
+            }
+            else {
+                if (_onRecv != null)
+                    _onRecv.OnNext(recvData);
+            }
+        }
+
+        /// <summary>
+        /// This property holds the last occured WebSocket error
+        /// </summary>
+        public string LastWebSocketError { get; private set; }
+
+        void CheckAndHandleWebSocketDisconnect() {
+            if (IsConnected)
+                return;
+
+            if (_onRecv != null) {
                 _onRecv.Dispose();
                 _onRecv = null;
                 IsProbed = false;
                 IsUpgraded = false;
-            }
 
-            if (IsConnected) {
-                var recvData = WebSocket.Recv();
-                if (recvData != null) {
-                    if (recvData == Packet.ProbeAnswer) {
-                        IsProbed = true;
-                        Debug.LogFormat("socket.io => {0} probed~", WebSocket.Url.ToString());
-                    }
-                    else if (recvData == Packet.Pong) {
-                        Debug.LogFormat("socket.io => {0} pong~", WebSocket.Url.ToString());
-                    }
-                    else {
-                        if (_onRecv != null)
-                            _onRecv.OnNext(recvData);
-                    }
+                var sockets = gameObject.GetComponentsInChildren<Socket>();
+                foreach (var s in sockets) {
+                    if (s.onDisconnect != null)
+                        s.onDisconnect();
                 }
             }
+            
+            if (SocketManager.Instance.Reconnection) {
+                var sockets = gameObject.GetComponentsInChildren<Socket>();
+                foreach (var s in sockets)
+                    SocketManager.Instance.Reconnect(s, 1);
+            }
         }
-        
+
     }
 
 }
