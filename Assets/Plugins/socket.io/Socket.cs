@@ -7,6 +7,8 @@ namespace socket.io {
 
     public class Socket : MonoBehaviour {
 
+        public string url;
+
         /// <summary>
         /// Namespace ("/" is the default namespace which means global namespace.)
         /// </summary>

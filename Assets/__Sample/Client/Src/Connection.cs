@@ -10,11 +10,14 @@ namespace Sample {
 
         void Start() {
             var serverUrl = "http://localhost:4444";
+            var socket = Socket.Connect(serverUrl);
 
-            var io = Socket.Connect(serverUrl);
-
-            io.On("connect", () => {
+            socket.On("connect", () => {
                 Debug.Log("Hello, Socket.io~");
+            });
+
+            socket.On("disconnect", () => {
+                Debug.Log("Bye~");
             });
         }
 

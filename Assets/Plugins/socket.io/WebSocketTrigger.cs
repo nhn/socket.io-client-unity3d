@@ -63,12 +63,21 @@ namespace socket.io {
         void Update() {
             var err = WebSocket.GetLastError();
 
-            if (err != string.Empty) {
+            if (!string.IsNullOrEmpty(err)) {
                 _onRecv.OnError(new WebSocketErrorException(err));
                 _onRecv.Dispose();
                 _onRecv = null;
                 IsProbed = false;
                 IsUpgraded = false;
+
+                if (!IsConnected) {
+                    var sockets = gameObject.GetComponentsInChildren<Socket>();
+
+                    foreach (var s in sockets) {
+                        if (SocketManager.Instance.Reconnection)
+                            SocketManager.Instance.Reconnect(s, 1);
+                    }
+                }
             }
 
             if (IsConnected) {
