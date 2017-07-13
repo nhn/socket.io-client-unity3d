@@ -196,7 +196,6 @@ namespace socket.io {
 
             // Start to receive a incoming WebSocket packet
             webSocketTrigger.OnRecvAsObservable(WebSocketUrl)
-                .CatchIgnore()
                 .Subscribe(r => { capturedSocket.OnRecvWebSocketEvent(r); })
                 .AddTo(Socket);
             

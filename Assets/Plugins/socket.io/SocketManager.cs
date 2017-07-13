@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UniRx;
-using UniRx.Triggers;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -35,7 +34,6 @@ namespace socket.io {
         /// </summary>
         public int ReconnectionDelay { get; set; }
 
-
         public Socket Connect(string url) {
             var socket = new GameObject(string.Format("socket.io - {0}", url)).AddComponent<Socket>();
             socket.transform.parent = transform;
@@ -46,6 +44,11 @@ namespace socket.io {
             return socket;
         }
 
+        /// <summary>
+        /// Reconnect method (Users seldom call this method, instead SocketManager will call when Reconnection property is true)
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <param name="reconnectionAttempts"></param>
         public void Reconnect(Socket socket, int reconnectionAttempts) {
             // Check if request already pended
             if (_connectRequests.Any(r => r.Item1 == socket))
@@ -93,23 +96,25 @@ namespace socket.io {
             return _webSocketTriggers.ContainsKey(url) ? _webSocketTriggers[url] : null;
         }
 
+        /// <summary>
+        /// Return a Socket instance if there is a connection to url param
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public Socket GetSocket(string url) {
             var go = GameObject.Find(string.Format("socket.io - {0}", url));
             return (go != null) ? go.GetComponent<Socket>() : null;
         }
 
+        /// <summary>
+        /// Current async connection request (If this value is not null, it means a connection is on running~)
+        /// </summary>
         IDisposable _cancelConnectRequest;
 
         void Update() {
             if (_cancelConnectRequest != null || !_connectRequests.Any(c => c.Item4 < DateTime.Now))
                 return;
-
-            //if (!capturedSocket.IsConnected) {
-            //    if (capturedSocket.onDisconnect != null && capturedReconnectionAttempts <= 1)
-            //        capturedSocket.onDisconnect();
-            //    if (SocketManager.Instance.Reconnection)
-            //        SocketManager.Instance.Reconnect(capturedUrl, 1, capturedSocket);
-
+            
             var index = _connectRequests.FindIndex(c => c.Item4 < DateTime.Now);
             var request = _connectRequests[index];
             _connectRequests.RemoveAt(index);
@@ -160,6 +165,15 @@ namespace socket.io {
                       _cancelConnectRequest = null;
                   })
                   .DoOnCompleted(() => {
+                      if (_socketInit.Reconnection) {
+                          if (_socketInit.Socket.onReconnect != null)
+                              _socketInit.Socket.onReconnect(_socketInit.ReconnectionAttempts);
+                      }
+                      else {
+                          if (_socketInit.Socket.onConnect != null)
+                              _socketInit.Socket.onConnect();
+                      }
+
                       _socketInit.CleanUp();
                       _cancelConnectRequest = null;
                   })

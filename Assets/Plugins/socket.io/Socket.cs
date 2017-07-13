@@ -53,14 +53,7 @@ namespace socket.io {
                 return;
 
             if (pkt.enginePktType == EnginePacketTypes.MESSAGE) {
-                if (pkt.socketPktType == SocketPacketTypes.CONNECT) {
-                    if (onConnect != null)
-                        onConnect();
-                }
-                else if (pkt.socketPktType == SocketPacketTypes.DISCONNECT) {
-                    Debug.LogFormat("socket.io => {0} disconnected", gameObject.name);
-                }
-                else if (pkt.socketPktType == SocketPacketTypes.ACK) {
+                if (pkt.socketPktType == SocketPacketTypes.ACK) {
                     Debug.Assert(pkt.HasId && pkt.HasBody);
 
                     _acks[pkt.id](pkt.body);
@@ -83,6 +76,10 @@ namespace socket.io {
                         _evtHandlers[evtName](data);
                     }
                 }
+                //else if (pkt.socketPktType == SocketPacketTypes.CONNECT) {
+                //}
+                //else if (pkt.socketPktType == SocketPacketTypes.DISCONNECT) {
+                //}
             }
             //else if (pkt.enginePktType == EnginePacketTypes.PONG) {}
             //else {}
