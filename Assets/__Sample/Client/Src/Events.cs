@@ -19,7 +19,7 @@ namespace Sample {
                 // send "my other event" event
                 socket.Emit(
                     "my other event",       // event-name
-                    "{ \"my\": \"data\" }"  // data (in Json-format)
+                    "{ 'my': 'data'  }"  // data (in Json-format)
                     );
             });
         }

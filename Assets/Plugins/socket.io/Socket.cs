@@ -6,7 +6,10 @@ using System.Collections.Generic;
 namespace socket.io {
 
     public class Socket : MonoBehaviour {
-
+        
+        /// <summary>
+        /// Url which this socket connected or to be connected~
+        /// </summary>
         public string url;
 
         /// <summary>
@@ -35,14 +38,14 @@ namespace socket.io {
 
         public bool IsConnected {
             get {
-                return (WebSocketTrigger != null && 
-                    WebSocketTrigger.WebSocket != null&& 
-                    WebSocketTrigger.WebSocket.IsConnected && 
+                return (WebSocketTrigger != null &&
+                    WebSocketTrigger.WebSocket != null &&
+                    WebSocketTrigger.WebSocket.IsConnected &&
                     WebSocketTrigger.IsUpgraded
                     );
             }
         }
-        
+
         public void OnRecvWebSocketEvent(string data) {
             if (data != Packet.ProbeAnswer)
                 DispatchPacket(data.Decode());
@@ -76,13 +79,7 @@ namespace socket.io {
                         _evtHandlers[evtName](data);
                     }
                 }
-                //else if (pkt.socketPktType == SocketPacketTypes.CONNECT) {
-                //}
-                //else if (pkt.socketPktType == SocketPacketTypes.DISCONNECT) {
-                //}
             }
-            //else if (pkt.enginePktType == EnginePacketTypes.PONG) {}
-            //else {}
         }
 
         readonly Dictionary<int, Action<string>> _acks = new Dictionary<int, Action<string>>();
@@ -92,36 +89,60 @@ namespace socket.io {
         /// </summary>
         int _idGenerator = -1;
 
-        public void Emit(string evtName, string data, Action<string> ack) {
-            if (WebSocketTrigger == null)
-                return;
-
-            if (ack != null) {
-                var pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}"",{1}]", evtName, data));
-                WebSocketTrigger.WebSocket.Send(pkt.Encode());
-
-                _acks.Add(pkt.id, ack);
-            }
-            else {
-                if (data.Length > 0) {
-                    var pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}"",{1}]", evtName, data));
-                    WebSocketTrigger.WebSocket.Send(pkt.Encode());
-                }
-                else {
-                    var pkt = new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}""]", evtName));
-                    WebSocketTrigger.WebSocket.Send(pkt.Encode());
-                }
-            }
+        public void Emit(string evtName) {
+            Emit(evtName, string.Empty, null);
         }
 
         public void Emit(string evtName, string data) {
             Emit(evtName, data, null);
         }
 
-        public void Emit(string evtName) {
-            Emit(evtName, string.Empty, null);
+        public void EmitJson(string evtName, string jsonData) {
+            EmitJson(evtName, jsonData, null);
         }
 
+        public void Emit(string evtName, string data, Action<string> ack) {
+            if (WebSocketTrigger == null)
+                return;
+
+            if (ack != null) {
+                var pkt = data.Length > 0 ?
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}"",""{1}""]", evtName, data)) :
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}""]", evtName));
+
+                WebSocketTrigger.WebSocket.Send(pkt.Encode());
+                _acks.Add(pkt.id, ack);
+            }
+            else {
+                var pkt = data.Length > 0 ?
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}"",""{1}""]", evtName, data)) :
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}""]", evtName));
+
+                WebSocketTrigger.WebSocket.Send(pkt.Encode());
+            }
+        }
+
+        public void EmitJson(string evtName, string jsonData, Action<string> ack) {
+            if (WebSocketTrigger == null)
+                return;
+
+            if (ack != null) {
+                var pkt = jsonData.Length > 0 ?
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}"",{1}]", evtName, jsonData)) :
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, nsp, string.Format(@"[""{0}""]", evtName));
+
+                WebSocketTrigger.WebSocket.Send(pkt.Encode());
+                _acks.Add(pkt.id, ack);
+            }
+            else {
+                var pkt = jsonData.Length > 0 ?
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}"",{1}]", evtName, jsonData)) :
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, nsp, string.Format(@"[""{0}""]", evtName));
+
+                WebSocketTrigger.WebSocket.Send(pkt.Encode());
+            }
+        }
+        
         #region System-Event handlers
         public Action onConnect;
         public Action onConnectTimeOut;
