@@ -34,14 +34,8 @@ namespace socket.io {
         /// </summary>
         public int ReconnectionDelay { get; set; }
 
-        public Socket Connect(string url) {
-            var socket = new GameObject(string.Format("socket.io - {0}", url)).AddComponent<Socket>();
-            socket.transform.parent = transform;
-            socket.url = url;
-
+        public void Connect(Socket socket) {
             _connectRequests.Add(Tuple.Create(socket, false, 0, DateTime.Now));
-
-            return socket;
         }
 
         /// <summary>
@@ -56,8 +50,8 @@ namespace socket.io {
 
             _connectRequests.Add(Tuple.Create(socket, true, reconnectionAttempts, DateTime.Now.AddMilliseconds(ReconnectionDelay)));
 
-            if (socket.onReconnectAttempt != null)
-                socket.onReconnectAttempt();
+            if (socket.OnReconnectAttempt != null)
+                socket.OnReconnectAttempt();
 
             Debug.LogFormat("socket.io => {0} attempts to reconnect", socket.gameObject.name);
         }
@@ -123,8 +117,8 @@ namespace socket.io {
                   .Timeout(TimeSpan.FromMilliseconds(TimeOut))
                   .DoOnError(e => {
                       if (e is TimeoutException) {
-                          if (_socketInit.Socket.onConnectTimeOut != null)
-                              _socketInit.Socket.onConnectTimeOut();
+                          if (_socketInit.Socket.OnConnectTimeOut != null)
+                              _socketInit.Socket.OnConnectTimeOut();
 
                           Debug.LogErrorFormat(
                               "socket.io => {0} connection timed out!!", 
@@ -147,18 +141,18 @@ namespace socket.io {
                       }
 
                       if (_socketInit.Reconnection) {
-                          if (_socketInit.Socket.onReconnectFailed != null)
-                              _socketInit.Socket.onReconnectFailed();
+                          if (_socketInit.Socket.OnReconnectFailed != null)
+                              _socketInit.Socket.OnReconnectFailed();
 
-                          if (_socketInit.Socket.onReconnectError != null)
-                              _socketInit.Socket.onReconnectError(e);
+                          if (_socketInit.Socket.OnReconnectError != null)
+                              _socketInit.Socket.OnReconnectError(e);
 
                           if (Reconnection)
                               Reconnect(_socketInit.Socket, _socketInit.ReconnectionAttempts + 1);
                       }
                       else {
-                          if (_socketInit.Socket.onConnectError != null)
-                              _socketInit.Socket.onConnectError(e);
+                          if (_socketInit.Socket.OnConnectError != null)
+                              _socketInit.Socket.OnConnectError(e);
                       }
 
                       _socketInit.CleanUp();
@@ -166,12 +160,12 @@ namespace socket.io {
                   })
                   .DoOnCompleted(() => {
                       if (_socketInit.Reconnection) {
-                          if (_socketInit.Socket.onReconnect != null)
-                              _socketInit.Socket.onReconnect(_socketInit.ReconnectionAttempts);
+                          if (_socketInit.Socket.OnReconnect != null)
+                              _socketInit.Socket.OnReconnect(_socketInit.ReconnectionAttempts);
                       }
                       else {
-                          if (_socketInit.Socket.onConnect != null)
-                              _socketInit.Socket.onConnect();
+                          if (_socketInit.Socket.OnConnect != null)
+                              _socketInit.Socket.OnConnect();
                       }
 
                       _socketInit.CleanUp();
