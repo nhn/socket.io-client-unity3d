@@ -22,7 +22,9 @@ var io = require('socket.io')(app);
 // handle client's connection event
 io.on('connection', function (socket) { 
 
-   socket.on('ferret', function (name, fn) {
+   socket.on('ferret', function (data, fn) {
+        console.log(data);
+        
         // send 'woot' string as an ack message
         fn('woot');
     }); 

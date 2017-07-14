@@ -12,10 +12,10 @@ namespace Sample {
             var serverUrl = "http://localhost:4444";
             var socket = Socket.Connect(serverUrl);
 
-            socket.On("connect", () => {
+            socket.On(SystemEvents.connect, () => {
                 // send "ferret" event
                 socket.Emit(
-                    "ferret", "\"toby\"", 
+                    "ferret", "toby", 
                     (string r) => { Debug.Log(r); } // set callback handler for Ack
                     );
             });
