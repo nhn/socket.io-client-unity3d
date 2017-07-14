@@ -11,7 +11,7 @@ namespace Sample {
         void Start() {
             var serverUrl = "http://localhost:4444";
 
-            // news nsp
+            // news namespace
             var news = Socket.Connect(serverUrl + "/news");
             news.On(SystemEvents.connect, () => {
                 news.Emit("woot");
@@ -23,7 +23,7 @@ namespace Sample {
                 Debug.Log(data);
             });
 
-            // chat nsp
+            // chat namespace
             var chat = Socket.Connect(serverUrl + "/chat");
             chat.On(SystemEvents.connect, () => {
                 chat.Emit("hi~");
