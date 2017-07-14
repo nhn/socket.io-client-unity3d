@@ -175,6 +175,8 @@ namespace socket.io {
                 .AddTo(Socket);
             
             observer.OnNext(Socket);
+
+            yield return new WaitForSeconds(1f);
             observer.OnCompleted();
         }
         

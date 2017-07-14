@@ -188,8 +188,8 @@ namespace socket.io {
 
             if (ack != null) {
                 var pkt = data.Length > 0 ?
-                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, WebSocketTrigger.NewPacketId, Namespace, string.Format(@"[""{0}"",""{1}""]", eventName, data)) :
-                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, WebSocketTrigger.NewPacketId, Namespace, string.Format(@"[""{0}""]", eventName));
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, Namespace, string.Format(@"[""{0}"",""{1}""]", eventName, data)) :
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, Namespace, string.Format(@"[""{0}""]", eventName));
 
                 WebSocketTrigger.WebSocket.Send(pkt.Encode());
                 _acks.Add(pkt.id, ack);
@@ -209,8 +209,8 @@ namespace socket.io {
 
             if (ack != null) {
                 var pkt = jsonData.Length > 0 ?
-                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, WebSocketTrigger.NewPacketId, Namespace, string.Format(@"[""{0}"",{1}]", eventName, jsonData)) :
-                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, WebSocketTrigger.NewPacketId, Namespace, string.Format(@"[""{0}""]", eventName));
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, Namespace, string.Format(@"[""{0}"",{1}]", eventName, jsonData)) :
+                    new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.EVENT, ++_idGenerator, Namespace, string.Format(@"[""{0}""]", eventName));
 
                 WebSocketTrigger.WebSocket.Send(pkt.Encode());
                 _acks.Add(pkt.id, ack);
@@ -223,6 +223,11 @@ namespace socket.io {
                 WebSocketTrigger.WebSocket.Send(pkt.Encode());
             }
         }
+
+        /// <summary>
+        /// The unique value generator for acks message id.
+        /// </summary>
+        int _idGenerator = -1;
 
         #endregion
 
@@ -297,7 +302,7 @@ namespace socket.io {
             switch (pkt.socketPktType) {
                 case SocketPacketTypes.ACK:
                     if (!pkt.HasId) {
-                        Debug.LogErrorFormat("{0} has no id", pkt.ToString());
+                        Debug.LogWarningFormat("{0} has no id", pkt.ToString());
                         return;
                     }
 
@@ -307,7 +312,7 @@ namespace socket.io {
 
                 case SocketPacketTypes.EVENT:
                     if (!pkt.HasBody) {
-                        Debug.LogErrorFormat("{0} has no body(data)", pkt.ToString());
+                        Debug.LogWarningFormat("{0} has no body(data)", pkt.ToString());
                         return;
                     }
 
@@ -321,7 +326,7 @@ namespace socket.io {
 
                     var eventName = pkt.body.Substring(2, seperateIndex - 3);
                     if (!_handlers.ContainsKey(eventName)) {
-                        Debug.LogErrorFormat("{0} event doesn't have a handler", eventName);
+                        Debug.LogWarningFormat("{0} event doesn't have a handler", eventName);
                         break;
                     }
 

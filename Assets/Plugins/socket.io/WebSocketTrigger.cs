@@ -21,11 +21,10 @@ namespace socket.io {
             if (_cancelPingPong == null) {
                 _cancelPingPong = gameObject.UpdateAsObservable()
                     .Sample(TimeSpan.FromSeconds(10f))
-                    .Where(_ => WebSocket.IsConnected)
                     .Subscribe(_ => {
                         WebSocket.Send(Packet.Ping);
                         Debug.LogFormat("socket.io => {0} ping~", WebSocket.Url.ToString());
-                    }).AddTo(this);
+                    });
             }
 
             if (_onRecv == null)
@@ -35,6 +34,11 @@ namespace socket.io {
         }
         
         protected override void RaiseOnCompletedOnDestroy() {
+            if (_cancelPingPong != null) {
+                _cancelPingPong.Dispose();
+                _cancelPingPong = null;
+            }
+
             if (_onRecv != null) {
                 _onRecv.OnCompleted();
                 _onRecv = null;
@@ -64,16 +68,7 @@ namespace socket.io {
         public bool IsProbed { get; set; }
 
         public bool IsUpgraded { get; set; }
-
-        /// <summary>
-        /// The unique value for acks event
-        /// </summary>
-        public int NewPacketId { get { return ++_idGenerator; } }
-
-        /// <summary>
-        /// The unique value generator for acks message id.
-        /// </summary>
-        int _idGenerator = -1;
+        
 
         void Update() {
             LastWebSocketError = WebSocket.GetLastError();
@@ -111,6 +106,8 @@ namespace socket.io {
                 return;
 
             if (_onRecv != null) {
+                _cancelPingPong.Dispose();
+                _cancelPingPong = null;
                 _onRecv.Dispose();
                 _onRecv = null;
                 IsProbed = false;
