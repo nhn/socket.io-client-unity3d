@@ -29,12 +29,15 @@ Reference to the [Wiki section of GitHub](https://github.com/nhnent/socket.io-cl
 | Milestone | Release Date |
 | --- | --- |
 | 1.0.0 | April 2017 |
-| 1.0.1 | 2017 |
+| 1.0.1 | May 2017 |
+| 1.1.1 | July 2017 |
+| 2.0.0 | 2017 |
 
-### Planned 1.0.1 features
+### 2.0.0 features planed
 
 Improve performance and convenience, and documentation.
 Consider the performance test.
+Support Socket.IO v2.
 
 ## Contributing
 
