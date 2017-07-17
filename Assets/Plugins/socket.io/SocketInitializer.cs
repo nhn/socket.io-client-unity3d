@@ -81,6 +81,13 @@ namespace socket.io {
             Reconnection = reconnection;
             ReconnectionAttempts = reconnectionAttempts;
 
+            // Extract each key & value pairs in Socket.Url's query
+            var matches = Regex.Matches(Socket.Url.Query, @"[^\?\&]+");
+            foreach (var m in matches) {
+                var temp = m.ToString().Split('=');
+                _urlQueries.Add(temp[0], temp[1]);
+            }
+
             if (Reconnection && Socket.OnReconnecting != null)
                 Socket.OnReconnecting(ReconnectionAttempts);
 
