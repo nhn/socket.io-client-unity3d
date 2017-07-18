@@ -3,7 +3,7 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/nhnent/socket.io-client-unity3d/blob/master/LICENSE) 
 
 ## Features
-Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later. *(Socket.IO V2 is not support currently)*
+Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later. *(Socket.IO V2 is not supported currently)*
 Socket.io is Opensource Realtime application framework. Socket.io group page : https://github.com/socketio
 
 ## Versioning
