@@ -132,9 +132,10 @@ namespace socket.io {
                     yield break;
                 }
 
-                var textIndex = www.text.IndexOf('{');
-                if (textIndex != -1) {
-                    var json = www.text.Substring(textIndex);
+                var jsonStartIndex = www.text.IndexOf('{');
+                if (jsonStartIndex != -1) {
+                    var jsonEndIndex = www.text.LastIndexOf('}');
+                    var json = www.text.Substring(jsonStartIndex, jsonEndIndex - jsonStartIndex + 1);
                     var answer = JsonUtility.FromJson<PollingUrlAnswer>(json);
                     _urlQueries.Add("sid", answer.sid);
                 }
