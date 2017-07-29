@@ -37,17 +37,17 @@ namespace socket.io {
                 if (data[readPos] == ',')
                     ++readPos;
 
-                if (data[readPos] != '[')
-                    int.TryParse(ReadChunk(ref data, ref readPos), out pkt.id);
-
                 if (readPos == data.Length)
                     return pkt;
+
+                if (data[readPos] != '[')
+                    int.TryParse(ReadChunk(ref data, ref readPos), out pkt.id);
 
                 pkt.body = data.Substring(readPos);
                 return pkt;
             }
             catch (Exception e) {
-                throw;
+                throw e;
             }
         }
 

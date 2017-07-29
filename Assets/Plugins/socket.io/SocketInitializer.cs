@@ -6,7 +6,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-
+using UnityEngine.Networking;
 
 namespace socket.io {
     
@@ -76,7 +76,7 @@ namespace socket.io {
         /// <param name="url"> WWW URL of a server </param>
         /// <param name="socket"> a socket which will be connected </param>
         /// <returns></returns>
-        public IObservable<Socket> InitAsObservable(Socket socket, bool reconnection, int reconnectionAttempts) {
+        public UniRx.IObservable<Socket> InitAsObservable(Socket socket, bool reconnection, int reconnectionAttempts) {
             Socket = socket;
             Reconnection = reconnection;
             ReconnectionAttempts = reconnectionAttempts;
@@ -99,7 +99,7 @@ namespace socket.io {
         /// The json object to parse the response of PollingURL
         /// </summary>
         [Serializable]
-        class PollingUrlAnswer {
+        struct PollingUrlAnswer {
             public string sid;
             public int pingInterval;
             public int pingTimeout;
@@ -111,7 +111,7 @@ namespace socket.io {
         /// <param name="observer"> The return value of InitAsObservable() method </param>
         /// <param name="cancelToken"> The cancel token object which signals to stop the currnet coroutine </param>
         /// <returns></returns>
-        IEnumerator InitCore(IObserver<Socket> observer, CancellationToken cancelToken) {
+        IEnumerator InitCore(UniRx.IObserver<Socket> observer, CancellationToken cancelToken) {
             // Declare to connect in socket.io v1.0
             _urlQueries.Add("EIO", "3");
             _urlQueries.Add("transport", "polling");
@@ -120,21 +120,33 @@ namespace socket.io {
             // Try get WebSocketTrigger instance if a connection already established _baseUrl.
             var webSocketTrigger = SocketManager.Instance.GetWebSocketTrigger(BaseUrl);
             if (webSocketTrigger == null || !webSocketTrigger.IsConnected) {
-                var www = new WWW(PollingUrl);
-                while (!www.isDone && !cancelToken.IsCancellationRequested)
+                UnityWebRequest www = UnityWebRequest.Get(PollingUrl);
+
+                //var www = new WWW(PollingUrl);
+
+                yield return www.Send();
+
+                while (!www.isDone && !cancelToken.IsCancellationRequested )
+                {
                     yield return null;
+                }
 
                 if (cancelToken.IsCancellationRequested)
                     yield break;
 
-                if (www.error != null) {
-                    observer.OnError(new WWWErrorException(www, www.text));
+                if (www.isNetworkError)
+                {
+                    observer.OnError(new Exception(www.error));
                     yield break;
                 }
 
-                var textIndex = www.text.IndexOf('{');
+                // while (!www.isDone && !cancelToken.IsCancellationRequested)
+                //   yield return null;
+
+                Debug.Log(www.downloadHandler.text);
+                var textIndex = www.downloadHandler.text.IndexOf('{');
                 if (textIndex != -1) {
-                    var json = www.text.Substring(textIndex);
+                    var json = www.downloadHandler.text.Substring(textIndex);
                     var answer = JsonUtility.FromJson<PollingUrlAnswer>(json);
                     _urlQueries.Add("sid", answer.sid);
                 }

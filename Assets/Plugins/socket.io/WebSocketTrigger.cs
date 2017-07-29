@@ -17,7 +17,7 @@ namespace socket.io {
         /// Observes received packets and also starts Ping-Pong routine
         /// </summary>
         /// <returns></returns>
-        public IObservable<string> OnRecvAsObservable() {
+        public UniRx.IObservable<string> OnRecvAsObservable() {
             if (_cancelPingPong == null) {
                 _cancelPingPong = gameObject.UpdateAsObservable()
                     .Sample(TimeSpan.FromSeconds(10f))

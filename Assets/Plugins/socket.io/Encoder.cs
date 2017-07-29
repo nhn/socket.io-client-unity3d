@@ -33,7 +33,7 @@ namespace socket.io {
                 return builder.ToString();
             }
             catch (Exception e) {
-                throw;
+                throw e;
             }
         }
 
