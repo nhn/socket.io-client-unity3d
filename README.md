@@ -1,9 +1,9 @@
 # Socket.IO-Client-Unity3D
-[![Download](https://img.shields.io/badge/Download-1.1.0-orange.svg)](https://github.com/nhnent/socket.io-client-unity3d/releases/tag/v1.1.0)
+[![Download](https://img.shields.io/badge/Download-1.1.1-orange.svg)](https://github.com/nhnent/socket.io-client-unity3d/releases/tag/v1.1.1)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/nhnent/socket.io-client-unity3d/blob/master/LICENSE) 
 
 ## Features
-Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later.
+Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later. *(Socket.IO V2 is supported)*
 Socket.io is Opensource Realtime application framework. Socket.io group page : https://github.com/socketio
 
 ## Versioning
@@ -29,12 +29,15 @@ Reference to the [Wiki section of GitHub](https://github.com/nhnent/socket.io-cl
 | Milestone | Release Date |
 | --- | --- |
 | 1.0.0 | April 2017 |
-| 1.0.1 | 2017 |
+| 1.0.1 | May 2017 |
+| 1.1.1 | July 2017 |
+| 2.0.0 | 2017 |
 
-### Planned 1.0.1 features
+### 2.0.0 features planed
 
 Improve performance and convenience, and documentation.
 Consider the performance test.
+Support Socket.IO v2.
 
 ## Contributing
 

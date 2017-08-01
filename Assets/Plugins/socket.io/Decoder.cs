@@ -37,6 +37,9 @@ namespace socket.io {
                 if (data[readPos] == ',')
                     ++readPos;
 
+                if (readPos == data.Length)
+                    return pkt;
+
                 if (data[readPos] != '[')
                     int.TryParse(ReadChunk(ref data, ref readPos), out pkt.id);
 
