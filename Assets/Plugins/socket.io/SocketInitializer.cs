@@ -6,7 +6,6 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using UnityEngine.Networking;
 
 namespace socket.io {
     
@@ -91,7 +90,7 @@ namespace socket.io {
             if (Reconnection && Socket.OnReconnecting != null)
                 Socket.OnReconnecting(ReconnectionAttempts);
 
-            return Observable.FromCoroutine<Socket>((observer, cancelToken) =>
+            return UniRx.Observable.FromCoroutine<Socket>((observer, cancelToken) =>
                 InitCore(observer, cancelToken));
         }
 
@@ -111,7 +110,7 @@ namespace socket.io {
         /// <param name="observer"> The return value of InitAsObservable() method </param>
         /// <param name="cancelToken"> The cancel token object which signals to stop the currnet coroutine </param>
         /// <returns></returns>
-        IEnumerator InitCore(UniRx.IObserver<Socket> observer, CancellationToken cancelToken) {
+        IEnumerator InitCore(UniRx.IObserver<Socket> observer, UniRx.CancellationToken cancelToken) {
             // Declare to connect in socket.io v1.0
             _urlQueries.Add("EIO", "3");
             _urlQueries.Add("transport", "polling");
@@ -120,33 +119,22 @@ namespace socket.io {
             // Try get WebSocketTrigger instance if a connection already established _baseUrl.
             var webSocketTrigger = SocketManager.Instance.GetWebSocketTrigger(BaseUrl);
             if (webSocketTrigger == null || !webSocketTrigger.IsConnected) {
-                UnityWebRequest www = UnityWebRequest.Get(PollingUrl);
-
-                //var www = new WWW(PollingUrl);
-
-                yield return www.Send();
+                var www = new WWW(PollingUrl);
 
                 while (!www.isDone && !cancelToken.IsCancellationRequested )
-                {
                     yield return null;
-                }
 
                 if (cancelToken.IsCancellationRequested)
                     yield break;
 
-                if (www.isNetworkError)
-                {
+                if (!string.IsNullOrEmpty(www.error)) {
                     observer.OnError(new Exception(www.error));
                     yield break;
                 }
 
-                // while (!www.isDone && !cancelToken.IsCancellationRequested)
-                //   yield return null;
-
-                Debug.Log(www.downloadHandler.text);
-                var textIndex = www.downloadHandler.text.IndexOf('{');
+                var textIndex = www.text.IndexOf('{');
                 if (textIndex != -1) {
-                    var json = www.downloadHandler.text.Substring(textIndex);
+                    var json = www.text.Substring(textIndex);
                     var answer = JsonUtility.FromJson<PollingUrlAnswer>(json);
                     _urlQueries.Add("sid", answer.sid);
                 }
