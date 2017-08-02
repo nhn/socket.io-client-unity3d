@@ -1,146 +1,107 @@
-socket.io-client-unity3d
-====
-Socket.io for Unity3d client, which is compatible with Socket.IO v1.0 and later.
+# Socket.IO-Client-Unity3D
+[![Download](https://img.shields.io/badge/Download-1.1.1-orange.svg)](https://github.com/nhnent/socket.io-client-unity3d/releases/tag/v1.1.1)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/nhnent/socket.io-client-unity3d/blob/master/LICENSE) 
 
-# Install
-Download **socket.io.unitypackage** file from https://github.nhnent.com/rtcs/socket.io-client-unity3d/releases
+## Features
+Socket.IO-Client for Unity3D, which is compatible with Socket.IO v1.0 and later. *(Socket.IO V2 is not supported currently)*
+Socket.io is Opensource Realtime application framework. Socket.io group page : https://github.com/socketio
 
-# Usages
-## 1. Using with Node http server
-* Server (app.js)
+## Versioning
+* The version of Socket.IO-Client-Unity3D follows [Semantic Versioning 2.0](http://semver.org).
+* Given a version number MAJOR.MINOR.PATCH, increment the 
+   1. MAJOR version when you make incompatible API changes,
+   1. MINOR version when you add functionality in a backwards-compatible manner, and
+   1. PATCH version when you make backwards-compatible bug fixes.
 
-```javascript
-var app = require('http').createServer(handler)
-var io = require('socket.io')(app);
-var fs = require('fs');
+* Additional labels for pre-release and build metadata are available as extensions to the MAJOR.MINOR.PATCH format.
 
-app.listen(80);
+## Documentation
 
-function handler (req, res) {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
+Reference to the [Wiki section of GitHub](https://github.com/nhnent/socket.io-client-unity3d/wiki).
 
-    res.writeHead(200);
-    res.end(data);
-  });
-}
+## Roadmap
 
-io.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
-});
+* At NHN Entertainment, we service Real-Time Communication System (a.k.a. RTCS) developed by NHN Entertainment.
+* So, We will try to improve performance and convenience according to this roadmap.
+
+### Milestones
+
+| Milestone | Release Date |
+| --- | --- |
+| 1.0.0 | April 2017 |
+| 1.0.1 | May 2017 |
+| 1.1.1 | July 2017 |
+| 2.0.0 | 2017 |
+
+### 2.0.0 features planed
+
+Improve performance and convenience, and documentation.
+Consider the performance test.
+Support Socket.IO v2.
+
+## Contributing
+
+* Source Code Contributions:
+    * Please follow the [Contribution Guidelines for Socket.IO-Client-Unity3D](https://github.com/nhnent/socket.io-client-unity3d/blob/master/CONTRIBUTING.md).
+
+## Bug Reporting
+
+If you find a bug, it is very important to report it. We would like to help you and smash the bug away. If you can fix a bug, you can send pull request (Should register a issue before sending PR)
+
+### Before Reporting
+
+Look into our issue tracker to see if the bug was already reported and you can add more information of the bug.
+
+### Creating new issue
+
+A bug report should contain the following
+
+* An useful description of the bug
+
+* The steps to reproduce the bug
+
+* Details of system environments (OS)
+
+* What actually happened?
+
+* Which branch have you used?
+
+#### Thank you for reporting a bug!
+
+## Mailing list
+
+dl_rtcs@nhnent.com
+
+## Contributor
+
+* Junhwan, Oh
+* Doyoung, An
+* Chanyoung, Park
+
+## License
+
+Socket.IO-Client-Unity3D is licensed under the MIT license, see [LICENSE](https://github.com/nhnent/socket.io-client-unity3d/blob/master/LICENSE) for details.
+
 ```
+The MIT License (MIT)
 
-* Client (Events.cs)
+Copyright (c) 2017 NHN Entertainment Corp.
 
-```c#
-using UnityEngine;
-using socket.io;
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-namespace Sample {
-    public class Events : MonoBehaviour {
-        void Start() {
-            var socket = Socket.Connect("http://localhost:80");
-            socket.On("news", (string r) => {
-                Debug.Log(r);
-                socket.Emit("my other event", "{ \"my\": \"data\" }");
-            });
-        }
-    }
-}
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
-
-## 2. Sending and getting data (acknowledgements)
-* Server (app.js)
-
-```javascript
-var io = require('socket.io')(80);
-
-io.on('connection', function (socket) {
-  socket.on('ferret', function (name, fn) {
-    fn('woot');
-  });
-});
-```
-
-* Client (Acks.cs)
-
-```c#
-using UnityEngine;
-using socket.io;
-
-namespace Sample {
-    public class Acks : MonoBehaviour {
-        void Start() {
-            var socket = Socket.Connect("http://localhost:80");
-            socket.On("connect", () => {
-                socket.Emit("ferret", "\"toby\"", (string r) => {
-                    Debug.Log(r);
-                });
-            });
-        }
-    }
-}
-```
-
-## 3. Restricting yourself to a namespace
-* Server (app.js)
-
-```javascript
-var io = require('socket.io')(80);
-var chat = io
-  .of('/chat')
-  .on('connection', function (socket) {
-    socket.emit('a message', {
-        that: 'only'
-      , '/chat': 'will get'
-    });
-    chat.emit('a message', {
-        everyone: 'in'
-      , '/chat': 'will get'
-    });
-  });
-
-var news = io
-  .of('/news')
-  .on('connection', function (socket) {
-    socket.emit('item', { news: 'item' });
-  });
-```
-
-* Client (Namespace.cs)
-
-```c#
-using UnityEngine;
-using socket.io;
-
-namespace Sample {
-    public class Namespace : MonoBehaviour {
-        void Start() {
-            var chat = Socket.Connect("http://localhost:80/chat");
-            var news = Socket.Connect("http://localhost:80/news");
-            
-            chat.On("connect", () => {
-                chat.Emit("hi");
-            });
-            chat.On("a message", (string r) => {
-                Debug.Log(r);
-            });
-            
-            news.On("connect", () => {
-                chat.Emit("woot");
-            });
-            news.On("item", (string r) => {
-                Debug.Log(r);
-            });
-        }
-    }
-}
-```
-

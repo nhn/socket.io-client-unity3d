@@ -6,50 +6,27 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-
+using UnityEngine.Networking;
 
 namespace socket.io {
-
+    
     /// <summary>
     /// The initializer which perform the entire process about connecting a socket.io server
     /// </summary>
     public class SocketInitializer : MonoBehaviour {
 
-        /// <summary>
-        /// Return an UniRX observable object which run the connecting process in async mode.
-        /// </summary>
-        /// <param name="url"> WWW URL of a server </param>
-        /// <param name="socket"> a socket which will be connected </param>
-        /// <returns></returns>
-        public IObservable<Socket> InitAsObservable(string url, bool reconnection, int reconnectionAttempts, Socket socket) {
-            ConnectUrl = url;
-            Socket = socket;
-            Reconnection = reconnection;
-            ReconnectionAttempts = reconnectionAttempts;
+        public Socket Socket { get; private set; }
 
-            if (Reconnection && Socket.onReconnecting != null)
-                Socket.onReconnecting(ReconnectionAttempts);
+        public bool Reconnection { get; private set; }
 
-            var matches = new Regex(_urlParamRgx).Matches(ConnectUrl);
-            foreach (var m in matches) {
-                var tokens = m.ToString().Split('?', '&', '=');
-                urlParams.Add(tokens[1], tokens[2]);
-            }
+        public int ReconnectionAttempts { get; private set; }
+        
+        #region URL properties
 
-            BaseUrl = ConnectUrl.Split('?')[0];
-            var matches2 = new Regex(_urlNamespaceRgx).Matches(BaseUrl);
-            Debug.Assert(matches2.Count <= 2);
-
-            if (matches2.Count == 2) {
-                BaseUrl = matches2[0].ToString();
-                Socket.nsp = matches2[1].ToString();
-            }
-
-            return Observable.FromCoroutine<Socket>((observer, cancelToken) =>
-                InitCore(observer, cancelToken));
+        public string BaseUrl {
+            get { return Socket.Url.Scheme + "://" + Socket.Url.Authority; }
         }
 
-        #region URL Helper
         /// <summary>
         /// WWW (Polling Mode) URL
         /// </summary>
@@ -58,8 +35,8 @@ namespace socket.io {
                 var builder = new StringBuilder(BaseUrl);
                 builder.Append("/socket.io/");
 
-                for (int i = 0; i < urlParams.Count; ++i) {
-                    var elem = urlParams.ElementAt(i);
+                for (int i = 0; i < _urlQueries.Count; ++i) {
+                    var elem = _urlQueries.ElementAt(i);
                     builder.Append(i == 0 ? "?" : "&");
                     builder.Append(elem.Key + "=" + elem.Value);
                 }
@@ -76,8 +53,8 @@ namespace socket.io {
                 var builder = new StringBuilder(BaseUrl.Replace("http://", "ws://"));
                 builder.Append("/socket.io/");
 
-                for (int i = 0; i < urlParams.Count; ++i) {
-                    var elem = urlParams.ElementAt(i);
+                for (int i = 0; i < _urlQueries.Count; ++i) {
+                    var elem = _urlQueries.ElementAt(i);
                     builder.Append(i == 0 ? "?" : "&");
                     builder.Append(elem.Key + "=" + elem.Value);
                 }
@@ -87,50 +64,42 @@ namespace socket.io {
         }
 
         /// <summary>
-        /// An URL which is given InitAsObservable() method's param.
+        /// The query in Url (key is the query's name and value is the query's value)
         /// </summary>
-        public string ConnectUrl { get; private set; }
+        readonly Dictionary<string, string> _urlQueries = new Dictionary<string, string>();
 
-        /// <summary>
-        /// An URL which remove params and namespace string from ConnectUrl.
-        /// </summary>
-        public string BaseUrl { get; private set; }
-
-        /// <summary>
-        /// Regular expression for extracting params from URL
-        /// </summary>
-        const string _urlParamRgx = @"[\?|\&]\w+=[^\&]+";
-
-        /// <summary>
-        /// Regular expression for extracting namespace from URL
-        /// </summary>
-        const string _urlNamespaceRgx = @"^http://[^/]+|([\s\S]+)";
-
-        /// <summary>
-        /// A container which contains URL's params (The key is param's name and the value is param's value)
-        /// </summary>
-        public Dictionary<string, string> urlParams = new Dictionary<string, string>();
         #endregion
 
-        public bool Reconnection { get; private set; }
-
-        public int ReconnectionAttempts { get; private set; }
-
-        public Socket Socket { get; private set; }
-        
-
         /// <summary>
-        /// Return weather Socket is current working on initialization process or not
+        /// Return an UniRX observable object which run the connecting process in async mode.
         /// </summary>
-        public bool IsBusy {
-            get { return Socket != null; }
+        /// <param name="url"> WWW URL of a server </param>
+        /// <param name="socket"> a socket which will be connected </param>
+        /// <returns></returns>
+        public UniRx.IObservable<Socket> InitAsObservable(Socket socket, bool reconnection, int reconnectionAttempts) {
+            Socket = socket;
+            Reconnection = reconnection;
+            ReconnectionAttempts = reconnectionAttempts;
+
+            // Extract each key & value pairs in Socket.Url's query
+            var matches = Regex.Matches(Socket.Url.Query, @"[^\?\&]+");
+            foreach (var m in matches) {
+                var temp = m.ToString().Split('=');
+                _urlQueries.Add(temp[0], temp[1]);
+            }
+
+            if (Reconnection && Socket.OnReconnecting != null)
+                Socket.OnReconnecting(ReconnectionAttempts);
+
+            return Observable.FromCoroutine<Socket>((observer, cancelToken) =>
+                InitCore(observer, cancelToken));
         }
 
         /// <summary>
         /// The json object to parse the response of PollingURL
         /// </summary>
         [Serializable]
-        class PollingUrlAnswer {
+        struct PollingUrlAnswer {
             public string sid;
             public int pingInterval;
             public int pingTimeout;
@@ -142,32 +111,44 @@ namespace socket.io {
         /// <param name="observer"> The return value of InitAsObservable() method </param>
         /// <param name="cancelToken"> The cancel token object which signals to stop the currnet coroutine </param>
         /// <returns></returns>
-        IEnumerator InitCore(IObserver<Socket> observer, CancellationToken cancelToken) {
+        IEnumerator InitCore(UniRx.IObserver<Socket> observer, CancellationToken cancelToken) {
             // Declare to connect in socket.io v1.0
-            urlParams.Add("EIO", "3");
-            urlParams.Add("transport", "polling");
-            urlParams.Add("t", TimeStamp.Now);
+            _urlQueries.Add("EIO", "3");
+            _urlQueries.Add("transport", "polling");
+            _urlQueries.Add("t", TimeStamp.Now);
 
             // Try get WebSocketTrigger instance if a connection already established _baseUrl.
             var webSocketTrigger = SocketManager.Instance.GetWebSocketTrigger(BaseUrl);
             if (webSocketTrigger == null || !webSocketTrigger.IsConnected) {
-                var www = new WWW(PollingUrl);
-                while (!www.isDone && !cancelToken.IsCancellationRequested)
+                UnityWebRequest www = UnityWebRequest.Get(PollingUrl);
+
+                //var www = new WWW(PollingUrl);
+
+                yield return www.Send();
+
+                while (!www.isDone && !cancelToken.IsCancellationRequested )
+                {
                     yield return null;
+                }
 
                 if (cancelToken.IsCancellationRequested)
                     yield break;
 
-                if (www.error != null) {
-                    observer.OnError(new WWWErrorException(www, www.text));
+                if (www.isNetworkError)
+                {
+                    observer.OnError(new Exception(www.error));
                     yield break;
                 }
 
-                var textIndex = www.text.IndexOf('{');
+                // while (!www.isDone && !cancelToken.IsCancellationRequested)
+                //   yield return null;
+
+                Debug.Log(www.downloadHandler.text);
+                var textIndex = www.downloadHandler.text.IndexOf('{');
                 if (textIndex != -1) {
-                    var json = www.text.Substring(textIndex);
+                    var json = www.downloadHandler.text.Substring(textIndex);
                     var answer = JsonUtility.FromJson<PollingUrlAnswer>(json);
-                    urlParams.Add("sid", answer.sid);
+                    _urlQueries.Add("sid", answer.sid);
                 }
 
                 if (webSocketTrigger == null) {
@@ -176,8 +157,8 @@ namespace socket.io {
                 }
             }
 
-            urlParams["transport"] = "websocket";
-            urlParams.Remove("t");
+            _urlQueries["transport"] = "websocket";
+            _urlQueries.Remove("t");
 
             webSocketTrigger.WebSocket = new WebSocketWrapper(new Uri(WebSocketUrl));
             Socket.transform.parent = webSocketTrigger.transform;
@@ -185,38 +166,44 @@ namespace socket.io {
             webSocketTrigger.WebSocket.Connect();
             yield return new WaitUntil(() => webSocketTrigger.IsConnected);
 
+            if (cancelToken.IsCancellationRequested) {
+                webSocketTrigger.WebSocket.Close();
+                yield break;
+            }
+
             webSocketTrigger.WebSocket.Send(Packet.Probe);
             yield return new WaitUntil(() => webSocketTrigger.IsProbed);
+
+            if (cancelToken.IsCancellationRequested) {
+                webSocketTrigger.WebSocket.Close();
+                yield break;
+            }
 
             webSocketTrigger.WebSocket.Send(new Packet(EnginePacketTypes.UPGRADE).Encode());
             webSocketTrigger.IsUpgraded = true;
 
             // Try to activate Socket.io namespace
             if (Socket.HasNamespace)
-                webSocketTrigger.WebSocket.Send(new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.CONNECT, Socket.nsp, string.Empty).Encode());
+                webSocketTrigger.WebSocket.Send(new Packet(EnginePacketTypes.MESSAGE, SocketPacketTypes.CONNECT, Socket.Namespace, string.Empty).Encode());
+
+            var capturedSocket = Socket;
 
             // Start to receive a incoming WebSocket packet
-            var capturedUrl = ConnectUrl;
-            var capturedSocket = Socket;
-            webSocketTrigger.OnRecvAsObservable(WebSocketUrl).Subscribe(r => {
-                capturedSocket.OnRecvWebSocketEvent(r);
-            }, e => {
-                Debug.LogErrorFormat("socket.io => {0} got an error: {1}", capturedSocket.gameObject.name, e.ToString());
-
-                if (SocketManager.Instance.Reconnection)
-                    SocketManager.Instance.Reconnect(capturedUrl, 1, capturedSocket);
-            }).AddTo(Socket);
+            webSocketTrigger.OnRecvAsObservable()
+                .Subscribe(r => { capturedSocket.OnRecvWebSocketPacket(r); })
+                .AddTo(Socket);
             
             observer.OnNext(Socket);
+
+            yield return new WaitForSeconds(1f);
             observer.OnCompleted();
         }
         
         public void CleanUp() {
             Socket = null;
-            ConnectUrl = string.Empty;
             Reconnection = false;
             ReconnectionAttempts = 0;
-            urlParams.Clear();
+            _urlQueries.Clear();
         }
 
     }

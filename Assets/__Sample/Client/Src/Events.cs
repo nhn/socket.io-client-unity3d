@@ -16,11 +16,11 @@ namespace Sample {
             socket.On("news", (string data) => {
                 Debug.Log(data);
 
-                // send "my other event" event
-                socket.Emit(
-                    "my other event",       // event-name
-                    "{ \"my\": \"data\" }"  // data (in Json-format)
-                    );
+                // Emit raw string data
+                socket.Emit("my other event", "{ my: data }");
+
+                // Emit json-formatted string data
+                socket.EmitJson("my other event", @"{ ""my"": ""data"" }");
             });
         }
 
