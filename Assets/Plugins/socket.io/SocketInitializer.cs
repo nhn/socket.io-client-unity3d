@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-
 namespace socket.io {
     
     /// <summary>
@@ -76,7 +75,7 @@ namespace socket.io {
         /// <param name="url"> WWW URL of a server </param>
         /// <param name="socket"> a socket which will be connected </param>
         /// <returns></returns>
-        public IObservable<Socket> InitAsObservable(Socket socket, bool reconnection, int reconnectionAttempts) {
+        public UniRx.IObservable<Socket> InitAsObservable(Socket socket, bool reconnection, int reconnectionAttempts) {
             Socket = socket;
             Reconnection = reconnection;
             ReconnectionAttempts = reconnectionAttempts;
@@ -91,7 +90,7 @@ namespace socket.io {
             if (Reconnection && Socket.OnReconnecting != null)
                 Socket.OnReconnecting(ReconnectionAttempts);
 
-            return Observable.FromCoroutine<Socket>((observer, cancelToken) =>
+            return UniRx.Observable.FromCoroutine<Socket>((observer, cancelToken) =>
                 InitCore(observer, cancelToken));
         }
 
@@ -99,7 +98,7 @@ namespace socket.io {
         /// The json object to parse the response of PollingURL
         /// </summary>
         [Serializable]
-        class PollingUrlAnswer {
+        struct PollingUrlAnswer {
             public string sid;
             public int pingInterval;
             public int pingTimeout;
@@ -111,7 +110,7 @@ namespace socket.io {
         /// <param name="observer"> The return value of InitAsObservable() method </param>
         /// <param name="cancelToken"> The cancel token object which signals to stop the currnet coroutine </param>
         /// <returns></returns>
-        IEnumerator InitCore(IObserver<Socket> observer, CancellationToken cancelToken) {
+        IEnumerator InitCore(UniRx.IObserver<Socket> observer, UniRx.CancellationToken cancelToken) {
             // Declare to connect in socket.io v1.0
             _urlQueries.Add("EIO", "3");
             _urlQueries.Add("transport", "polling");
@@ -121,14 +120,15 @@ namespace socket.io {
             var webSocketTrigger = SocketManager.Instance.GetWebSocketTrigger(BaseUrl);
             if (webSocketTrigger == null || !webSocketTrigger.IsConnected) {
                 var www = new WWW(PollingUrl);
-                while (!www.isDone && !cancelToken.IsCancellationRequested)
+
+                while (!www.isDone && !cancelToken.IsCancellationRequested )
                     yield return null;
 
                 if (cancelToken.IsCancellationRequested)
                     yield break;
 
-                if (www.error != null) {
-                    observer.OnError(new WWWErrorException(www, www.text));
+                if (!string.IsNullOrEmpty(www.error)) {
+                    observer.OnError(new Exception(www.error));
                     yield break;
                 }
 
