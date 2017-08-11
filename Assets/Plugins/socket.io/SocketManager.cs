@@ -35,7 +35,7 @@ namespace socket.io {
         public int ReconnectionDelay { get; set; }
 
         public void Connect(Socket socket) {
-            _connectRequests.Add(Tuple.Create(socket, false, 0, DateTime.Now));
+            _connectRequests.Add(UniRx.Tuple.Create(socket, false, 0, DateTime.Now));
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace socket.io {
             if (_connectRequests.Any(r => r.Item1 == socket))
                 return;
 
-            _connectRequests.Add(Tuple.Create(socket, true, reconnectionAttempts, DateTime.Now.AddMilliseconds(ReconnectionDelay)));
+            _connectRequests.Add(UniRx.Tuple.Create(socket, true, reconnectionAttempts, DateTime.Now.AddMilliseconds(ReconnectionDelay)));
 
             if (socket.OnReconnectAttempt != null)
                 socket.OnReconnectAttempt();
@@ -71,7 +71,7 @@ namespace socket.io {
         /// The pended requests to connect a server
         /// (Item1: Url, Item2: Reconnection, Item3: ReconnectionAttempts, Item4: Socket ref, Item5: TimeStamp)
         /// </summary>
-        readonly List<Tuple<Socket, bool, int, DateTime>> _connectRequests = new List<Tuple<Socket, bool, int, DateTime>>();
+        readonly List<UniRx.Tuple<Socket, bool, int, DateTime>> _connectRequests = new List<UniRx.Tuple<Socket, bool, int, DateTime>>();
 
         /// <summary>
         /// WebSocketTrigger instances (WebSocketTrigger is almost same with a session object)
