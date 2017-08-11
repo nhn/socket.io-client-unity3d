@@ -9,7 +9,7 @@ namespace Sample {
     public class Namespace : MonoBehaviour {
 
         void Start() {
-            var serverUrl = "http://localhost:4444";
+            var serverUrl = "http://localhost:7001";
 
             // news namespace
             var news = Socket.Connect(serverUrl + "/news");
