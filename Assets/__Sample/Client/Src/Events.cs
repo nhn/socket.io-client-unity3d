@@ -9,7 +9,7 @@ namespace Sample {
     public class Events : MonoBehaviour {
 
         void Start() {
-            var serverUrl = "http://localhost:4444";
+            var serverUrl = "http://localhost:7001";
             var socket = Socket.Connect(serverUrl);
 
             // receive "news" event
