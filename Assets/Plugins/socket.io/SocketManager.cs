@@ -37,7 +37,7 @@ namespace socket.io {
         public void Connect(Socket socket) {
             _connectRequests.Add(UniRx.Tuple.Create(socket, false, 0, DateTime.Now));
         }
-
+        
         /// <summary>
         /// Reconnect method (Users seldom call this method, instead SocketManager will call when Reconnection property is true)
         /// </summary>
@@ -55,7 +55,7 @@ namespace socket.io {
 
             Debug.LogFormat("socket.io => {0} attempts to reconnect", socket.gameObject.name);
         }
-
+        
         void Awake() {
             TimeOut = 20000;
             Reconnection = true;

@@ -23,6 +23,18 @@ namespace socket.io {
             return socket;
         }
 
+        /// <summary>
+        /// Disconnects the socket (The socket's gameobject will be destroyed!!)
+        /// </summary>
+        /// <param name="socket"></param>
+        public static void Disconnect(Socket socket) {
+            var sockets = socket.WebSocketTrigger.GetComponentsInChildren<Socket>();
+            if (sockets.Length == 1)
+                socket.WebSocketTrigger.ForceToCloseWebSocket();
+
+            Destroy(socket.gameObject);
+        }
+
         #region On/Off methods
 
         public void On(string eventName, Action<string> callback) {
