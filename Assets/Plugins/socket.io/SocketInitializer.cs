@@ -116,7 +116,7 @@ namespace socket.io {
             _urlQueries.Add("transport", "polling");
             _urlQueries.Add("t", TimeStamp.Now);
 
-            // Try get WebSocketTrigger instance if a connection already established _baseUrl.
+            // Try get WebSocketTrigger instance if a connection already established.
             var webSocketTrigger = SocketManager.Instance.GetWebSocketTrigger(BaseUrl);
             if (webSocketTrigger == null || !webSocketTrigger.IsConnected) {
                 var www = new WWW(PollingUrl);
