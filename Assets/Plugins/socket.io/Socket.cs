@@ -24,7 +24,15 @@ namespace socket.io {
         }
 
         /// <summary>
-        /// Disconnects the socket (The socket's gameobject will be destroyed!!)
+        /// Reconnects the socket which is disconnected
+        /// </summary>
+        /// <param name="socket"></param>
+        public static void Reconnect(Socket socket) {
+            SocketManager.Instance.Reconnect(socket, 1);
+        }
+
+        /// <summary>
+        /// Disconnects the socket
         /// </summary>
         /// <param name="socket"></param>
         public static void Disconnect(Socket socket) {
@@ -32,7 +40,7 @@ namespace socket.io {
             if (sockets.Length == 1)
                 socket.WebSocketTrigger.ForceToCloseWebSocket();
 
-            Destroy(socket.gameObject);
+            socket.transform.SetParent(SocketManager.Instance.transform, false);
         }
 
         #region On/Off methods
