@@ -132,10 +132,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 434345449}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7503c2ef72cf52c448827076aadcea80, type: 3}
+  m_Script: {fileID: 11500000, guid: 084af37a95b32ee47a93a19c4951cc83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Url: http://localhost:4000
 --- !u!4 &434345451
 Transform:
   m_ObjectHideFlags: 0

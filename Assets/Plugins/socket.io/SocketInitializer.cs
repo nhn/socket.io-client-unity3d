@@ -149,7 +149,7 @@ namespace socket.io {
             _urlQueries.Remove("t");
 
             webSocketTrigger.WebSocket = new WebSocketWrapper(new Uri(WebSocketUrl));
-            Socket.transform.parent = webSocketTrigger.transform;
+            Socket.transform.SetParent(webSocketTrigger.transform, false);
 
             webSocketTrigger.WebSocket.Connect();
             yield return new WaitUntil(() => webSocketTrigger.IsConnected);

@@ -48,6 +48,17 @@ namespace socket.io {
                 WebSocket.Close();
         }
 
+        void CancelOnRecv() {
+            if (_onRecv != null) {
+                _cancelPingPong.Dispose();
+                _cancelPingPong = null;
+                _onRecv.Dispose();
+                _onRecv = null;
+                IsProbed = false;
+                IsUpgraded = false;
+            }
+        }
+
         IDisposable _cancelPingPong;
         Subject<string> _onRecv;
 
@@ -68,7 +79,19 @@ namespace socket.io {
         public bool IsProbed { get; set; }
 
         public bool IsUpgraded { get; set; }
-        
+
+        public void ForceToCloseWebSocket() {
+            if (_onRecv != null)
+                CancelOnRecv();
+
+            WebSocket.Close();
+
+            var sockets = gameObject.GetComponentsInChildren<Socket>();
+            foreach (var s in sockets) {
+                if (s.OnDisconnect != null)
+                    s.OnDisconnect();
+            }
+        }
 
         void Update() {
             LastWebSocketError = WebSocket.GetLastError();
@@ -106,12 +129,7 @@ namespace socket.io {
                 return;
 
             if (_onRecv != null) {
-                _cancelPingPong.Dispose();
-                _cancelPingPong = null;
-                _onRecv.Dispose();
-                _onRecv = null;
-                IsProbed = false;
-                IsUpgraded = false;
+                CancelOnRecv();
 
                 var sockets = gameObject.GetComponentsInChildren<Socket>();
                 foreach (var s in sockets) {
