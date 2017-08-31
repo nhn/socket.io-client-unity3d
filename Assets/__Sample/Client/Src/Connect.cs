@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using socket.io;
 
 namespace Sample {
@@ -8,10 +9,10 @@ namespace Sample {
     /// </summary>
     public class Connect : MonoBehaviour {
 
-        void Start() {
+        IEnumerator Start() {
             var serverUrl = "http://localhost:7001";
             var socket = Socket.Connect(serverUrl);
-
+            
             socket.On(SystemEvents.connect, () => {
                 Debug.Log("Hello, Socket.io~");
             });
@@ -23,6 +24,14 @@ namespace Sample {
             socket.On(SystemEvents.disconnect, () => {
                 Debug.Log("Bye~");
             });
+
+            yield return new WaitForSeconds(1f);
+
+            Socket.Disconnect(socket);
+
+            yield return new WaitForSeconds(1f);
+
+            Socket.Reconnect(socket);
         }
 
     }
