@@ -49,7 +49,15 @@ namespace socket.io {
         /// </summary>
         public string WebSocketUrl {
             get {
-                var builder = new StringBuilder(BaseUrl.Replace("http://", "ws://"));
+                var builder = new StringBuilder();
+
+                if (BaseUrl.StartsWith("http://"))
+                    builder.Append(BaseUrl.Replace("http://", "ws://"));
+                else if (BaseUrl.StartsWith("https://"))
+                    builder.Append(BaseUrl.Replace("https://", "wss://"));
+                else
+                    Debug.Assert(false);
+
                 builder.Append("/socket.io/");
 
                 for (int i = 0; i < _urlQueries.Count; ++i) {
