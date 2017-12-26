@@ -272,7 +272,7 @@ namespace socket.io {
         /// The URL of the remote host which socket connected
         /// </summary>
         public Uri Url { get; private set; }
-        
+
         /// <summary>
         /// Namespace ("/" is the default namespace which means global namespace.)
         /// </summary>
@@ -304,7 +304,7 @@ namespace socket.io {
         }
 
         WebSocketTrigger _webSocketTrigger;
-        
+
         public void OnRecvWebSocketPacket(string pkt) {
             if (pkt == Packet.ProbeAnswer)
                 return;
@@ -318,7 +318,7 @@ namespace socket.io {
 
             if (pkt.enginePktType != EnginePacketTypes.MESSAGE)
                 return;
-            
+
             switch (pkt.socketPktType) {
                 case SocketPacketTypes.ACK:
                     if (!pkt.HasId) {
@@ -337,21 +337,32 @@ namespace socket.io {
                     }
 
                     var seperateIndex = pkt.body.IndexOf(", ");
-
                     var seperatorLen = 2;
+
                     if (seperateIndex == -1) {
                         seperateIndex = pkt.body.IndexOf(',');
                         seperatorLen = 1;
                     }
 
-                    var eventName = pkt.body.Substring(2, seperateIndex - 3);
-                    if (!_handlers.ContainsKey(eventName)) {
-                        Debug.LogWarningFormat("{0} event doesn't have a handler", eventName);
-                        break;
-                    }
+                    if (seperateIndex == -1) {
+                        var eventName = pkt.body.Substring(2, pkt.body.Length - 4);
+                        if (!_handlers.ContainsKey(eventName)) {
+                            Debug.LogWarningFormat("{0} event doesn't have a handler", eventName);
+                            break;
+                        }
 
-                    var data = pkt.body.Substring(seperateIndex + seperatorLen, pkt.body.Length - seperateIndex - seperatorLen - 1);
-                    _handlers[eventName](data);
+                        _handlers[eventName](string.Empty);
+                    }
+                    else {
+                        var eventName = pkt.body.Substring(2, seperateIndex - 3);
+                        if (!_handlers.ContainsKey(eventName)) {
+                            Debug.LogWarningFormat("{0} event doesn't have a handler", eventName);
+                            break;
+                        }
+
+                        var data = pkt.body.Substring(seperateIndex + seperatorLen, pkt.body.Length - seperateIndex - seperatorLen - 1);
+                        _handlers[eventName](data);
+                    }
                     break;
 
                 default:
