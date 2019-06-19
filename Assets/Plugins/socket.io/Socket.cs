@@ -24,6 +24,22 @@ namespace socket.io {
         }
 
         /// <summary>
+        /// Establishes a connection to a given url and certificateHandler
+        /// </summary>
+        /// <param name="url"> The URL of the remote host </param>
+        /// <param name="certificateHandler"> The CertificateHandler of the SSL </param>
+        /// <returns></returns>
+        public static Socket Connect(string url, CertificateHandler certificateHandler) {
+            var socket = new GameObject(string.Format("socket.io - {0}", url)).AddComponent<Socket>();
+            socket.transform.SetParent(SocketManager.Instance.transform, false);
+            socket.Url = new Uri(url);
+            socket.certificateHandler = certificateHandler;
+
+            SocketManager.Instance.Connect(socket);
+            return socket;
+        }
+
+        /// <summary>
         /// Reconnects the socket which is disconnected
         /// </summary>
         /// <param name="socket"></param>
@@ -272,6 +288,11 @@ namespace socket.io {
         /// The URL of the remote host which socket connected
         /// </summary>
         public Uri Url { get; private set; }
+        
+        /// <summary>
+        /// The CertificateHandler of the SSL
+        /// </summary>
+        public CertificateHandler certificateHandler { get; private set; }
         
         /// <summary>
         /// Namespace ("/" is the default namespace which means global namespace.)
