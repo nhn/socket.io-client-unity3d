@@ -9,6 +9,8 @@ namespace socket.io {
     /// </summary>
     public class Socket : MonoBehaviour {
 
+        public bool AllowReconnection { get; private set; }
+
         /// <summary>
         /// Establishes a connection to a given url
         /// </summary>
@@ -18,7 +20,7 @@ namespace socket.io {
             var socket = new GameObject(string.Format("socket.io - {0}", url)).AddComponent<Socket>();
             socket.transform.SetParent(SocketManager.Instance.transform, false);
             socket.Url = new Uri(url);
-
+            socket.AllowReconnection = true;
             SocketManager.Instance.Connect(socket);
             return socket;
         }
@@ -271,6 +273,15 @@ namespace socket.io {
                     WebSocketTrigger.WebSocket.IsConnected &&
                     WebSocketTrigger.IsUpgraded
                     );
+            }
+        }
+
+        public void Disconnect()
+        {
+            AllowReconnection = false;
+            if (IsConnected)
+            {
+                WebSocketTrigger.WebSocket.Close();
             }
         }
 
