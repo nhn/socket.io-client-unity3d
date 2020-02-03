@@ -141,7 +141,8 @@ namespace socket.io {
             if (SocketManager.Instance.Reconnection) {
                 var sockets = gameObject.GetComponentsInChildren<Socket>();
                 foreach (var s in sockets)
-                    SocketManager.Instance.Reconnect(s, 1);
+                    if (s.AllowReconnection)
+                        SocketManager.Instance.Reconnect(s, 1);
             }
         }
         

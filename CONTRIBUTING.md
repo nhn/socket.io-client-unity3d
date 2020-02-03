@@ -126,5 +126,20 @@ git branch -m develop old-develop     #rename develop
 git branch develop upstream/develop   #create a new develop
 ```
 
+### Submitting Pull Requests
+
+Before changes can be accepted a Contributor Licensing Agreement for Individual | Corporate must be completed.
+
+* If you are an individual writing original source code and you're sure you own the intellectual property, then you'll need to sign an [Individual CLA](https://docs.google.com/forms/d/1MhnsLF2VxhqnRp2fwifXxcpCsoa193T7RKthq4E9KEs/viewform?edit_requested=true )
+* If you work for a company that wants to allow you to contribute your work, then you'll need to sign a [Corporate CLA](https://docs.google.com/forms/d/1z-TB_Q6ll7Q1-kft3gQp9mPdC1wfxDVP3u0_nyYJE9g/viewform?edit_requested=true )
+* If you are an representative writing original source code, then you'll need to sign a [Representative CLA](https://docs.google.com/forms/d/14JqWub7w2Tw-LjBIs0viJFah5vwjRtNKCNhHz9Pnnpw/viewform?edit_requested=true )
+
+For Koreans(한국인)
+* If you are an individual writing original source code and you're sure you own the intellectual property, then you'll need to sign an [Individual CLA](https://docs.google.com/forms/d/e/1FAIpQLSekugNvCBPl7N2M5ONqHG4Lw1fqjfHzw1Lq-Zzm509LlKH7uA/viewform )
+* If you work for a company that wants to allow you to contribute your work, then you'll need to sign a [Corporate CLA](https://docs.google.com/forms/d/e/1FAIpQLScEnxqarG8t8DVbsXaXQTSrXpxvhKyrlJi-EjUOiDrlxcC0Zg/viewform )
+* If you are an representative writing original source code, then you'll need to sign a [Representative CLA](https://docs.google.com/forms/d/14S9lgd_DxsUhKNyMtatefPusuUSOiIdBYCAWrZygogU/viewform?edit_requested=true )
+
+Have a question for us? please send e-mail at oss@nhnent.com.
+
 ---
 Props to [Akka.NET](http://getakka.net/) and [NancyFX](https://github.com/NancyFx/Nancy), and [DotNetty](https://github.com/Azure/DotNetty) from which we've "borrowed" this text.
